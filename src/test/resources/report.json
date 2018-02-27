@@ -1,0 +1,41 @@
+{
+  "testName": "testMain",
+  "pages": [
+    {
+      "pageMethodReports": [
+        {
+          "methodName": "getOnlineCheckInHeaderText",
+          "fields": [
+            "servicesLink",
+            "servicesLink1"
+          ]
+        },
+        {
+          "methodName": "getOnlineCheckInHeaderText1",
+          "fields": [
+            "servicesLink11"
+          ]
+        }
+      ],
+      "pageName": "com.sample.tests.HomePage"
+    },
+    {
+      "pageMethodReports": [
+        {
+          "methodName": "login",
+          "fields": [
+            "servicesLink11"
+          ]
+        },
+        {
+          "methodName": "getasdkaskd",
+          "fields": [
+            "servicesLink",
+            "servicesLink1"
+          ]
+        }
+      ],
+      "pageName": "com.sample.tests.LandingPage"
+    }
+  ]
+}
