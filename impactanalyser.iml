@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -66,5 +67,12 @@
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.15" level="project" />
     <orderEntry type="library" name="Maven: org.testng:testng:6.14.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache-extras.beanshell:bsh:2.0b6" level="project" />
+    <orderEntry type="library" name="Maven: info.cukes:cucumber-java:1.2.5" level="project" />
+    <orderEntry type="library" name="Maven: info.cukes:cucumber-core:1.2.5" level="project" />
+    <orderEntry type="library" name="Maven: info.cukes:cucumber-html:0.2.3" level="project" />
+    <orderEntry type="library" name="Maven: info.cukes:cucumber-jvm-deps:1.0.5" level="project" />
+    <orderEntry type="library" name="Maven: info.cukes:gherkin:2.12.2" level="project" />
+    <orderEntry type="library" name="Maven: info.cukes:gherkin3:3.0.0" level="project" />
+    <orderEntry type="library" name="Maven: info.cukes:gherkin-jvm-deps:1.0.3" level="project" />
   </component>
 </module>
