@@ -33,7 +33,7 @@ public class PageEngine {
             for (AbstractInsnNode abstractInsnNode : methodNode.instructions.toArray()) {
                 if (abstractInsnNode.getType() == AbstractInsnNode.FIELD_INSN) {
                     FieldInsnNode fin = (FieldInsnNode) abstractInsnNode;
-                    if (isSeleniumField(pageClass.getDeclaredField(fin.name))) {
+                    if (isSeleniumField(getClassAndSuperClassField(pageClass,fin.name))) {
                         methodFields.add(fin.name);
                     }
                 }
@@ -52,6 +52,7 @@ public class PageEngine {
         return methodItems;
     }
 
+
     public List<String> getSeleniumFieldsFromPage(Class<?> pageClass) {
         List<Field> declaredFields = Arrays.asList(pageClass.getDeclaredFields());
         List<String> pageFields = new ArrayList<>();
@@ -68,6 +69,19 @@ public class PageEngine {
             }
         }
         return pageFields;
+    }
+
+    private Field getClassAndSuperClassField(Class<?> pageClass, String fieldName) {
+        Field field = null;
+        try {
+            field = pageClass.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException ex) {
+            try {
+                field = pageClass.getSuperclass().getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+            }
+        }
+        return field;
     }
 
     private boolean isSeleniumField(Field field) {

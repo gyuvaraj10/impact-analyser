@@ -12,21 +12,21 @@ public class SampleTest extends BaseTest {
 
     @Test
     public void testMain() {
-//        System.setProperty("webdriver.chrome.driver","/Users/Yuvaraj/Desktop/softwares/chromedriver/chromedriver");
-//        String actual = "Your Amazon.co.uk";
-//        WebDriver driver = new ChromeDriver();
-//        driver.get("https://www.amazon.co.uk/");
+        System.setProperty("webdriver.chrome.driver","/Users/Yuvaraj/Desktop/softwares/chromedriver/chromedriver");
+        String actual = "Your Amazon.co.uk";
+        WebDriver driver = new ChromeDriver();
+        driver.get("https://www.amazon.co.uk/");
         HomePage homePage = getHomePage();
-//        homePage.getOnlineCheckInHeaderText1();
-//        // HomePage page = new HomePage(driver);
-//        getHomePage().getOnlineCheckInHeaderText1();
-//        getHomePage().getOnlineCheckInHeaderText();
-////        String onlineText = page.getOnlineCheckInHeaderText();
-//        page.getOnlineCheckInHeaderText1();
-//        LandingPage landingPage = new LandingPage(driver);
-//        landingPage.getasdkaskd();
-//        landingPage.login();
-//        assertEquals(onlineText, actual);
+        homePage.getOnlineCheckInHeaderText1();
+        HomePage page = new HomePage(driver);
+        getHomePage().getOnlineCheckInHeaderText1();
+        getHomePage().getOnlineCheckInHeaderText();
+        String onlineText = page.getOnlineCheckInHeaderText();
+        page.getOnlineCheckInHeaderText1();
+        LandingPage landingPage = new LandingPage(driver);
+        landingPage.getasdkaskd();
+        landingPage.login();
+        assertEquals(onlineText, actual);
 
     }
 

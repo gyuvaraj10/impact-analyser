@@ -2,6 +2,8 @@ package com.sample.tests;
 
 import com.google.gson.Gson;
 import com.impact.analyser.*;
+import com.impact.analyser.cucumber.models.CucumberReport;
+import com.impact.analyser.report.CucumberTestReport;
 import com.impact.analyser.report.PageMethodReport;
 import com.impact.analyser.report.PageReport;
 import com.impact.analyser.report.TestReport;
@@ -32,24 +34,10 @@ public class AsmTest {
     public void testGet()  throws Exception {
         TDDCollector tddCollector = new TDDCollector();
         System.out.println(new Gson().toJson(tddCollector.collectReport(SampleTest.class)));
-        Parser parser = new Parser();
-        String path = this.getClass().getResource("/sample.feature").getPath();
-        InputStreamReader in = new InputStreamReader(new FileInputStream(this.getClass().getResource("/sample.feature").getPath()),
-                "UTF-8");
-        Feature feature = (Feature) parser.parse(in);
-        List<ScenarioDefinition> scenarioDefinitions = feature.getScenarioDefinitions();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        MultiLoader resourceLoader = new MultiLoader(classLoader);
-        ResourceLoaderClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-        String[] argv = new String[] {"-g", "com.sample.tests", path};
-        RuntimeOptions runtimeOptions = new RuntimeOptions(Arrays.asList(argv));
-        Runtime runtime = new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
-        List features = runtimeOptions.cucumberFeatures(resourceLoader);
-        StepDefinitionReporter stepDefinitionReporter = runtimeOptions.stepDefinitionReporter(classLoader);
-        runtime.getGlue().reportStepDefinitions(stepDefinitionReporter);
-        Runtime runtime1 = runtime;
-
-        System.out.println(new Gson().toJson(scenarioDefinitions));
+        BDDCollector bddCollector = new BDDCollector();
+        List<CucumberTestReport> cucumberReports = bddCollector.collectReport(new String[]{"com.sample.tests", "com.sample.test2"},
+                "/Users/Yuvaraj/dev/impactanalyser/src/test/resources/sample.feature");
+        System.out.println(new Gson().toJson(cucumberReports));
     }
 }
 

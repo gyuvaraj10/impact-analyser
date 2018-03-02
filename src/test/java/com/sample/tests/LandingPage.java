@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
-public class LandingPage {
+public class LandingPage extends BaseSeleniumPage {
 
 
     public LandingPage(WebDriver driver){
@@ -38,6 +38,7 @@ public class LandingPage {
 
     public void login() {
         servicesLink11.get(0).click();
+        baseElement.click();
     }
 
 
