@@ -1,6 +1,7 @@
 package com.impact.analyser;
 
 import org.objectweb.asm.tree.*;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindAll;
 import org.openqa.selenium.support.FindBy;
@@ -52,25 +53,6 @@ public class PageEngine {
         return methodItems;
     }
 
-
-    public List<String> getSeleniumFieldsFromPage(Class<?> pageClass) {
-        List<Field> declaredFields = Arrays.asList(pageClass.getDeclaredFields());
-        List<String> pageFields = new ArrayList<>();
-        for(Field field: declaredFields) {
-            if(field.getType().isAssignableFrom(WebElement.class)) {
-                pageFields.add(field.getName());
-            } else if(field.getType().isAssignableFrom(List.class)) {
-                List<Annotation> annotations = Arrays.asList(field.getDeclaredAnnotations());
-                if(annotations.stream().anyMatch(x->x.annotationType().isAssignableFrom(FindBy.class)
-                        || x.annotationType().isAssignableFrom(FindAll.class)
-                        || x.annotationType().isAssignableFrom(FindBys.class))) {
-                    pageFields.add(field.getName());
-                }
-            }
-        }
-        return pageFields;
-    }
-
     private Field getClassAndSuperClassField(Class<?> pageClass, String fieldName) {
         Field field = null;
         try {
@@ -94,6 +76,8 @@ public class PageEngine {
                     || x.annotationType().isAssignableFrom(FindBys.class))) {
                 return true;
             }
+        } else if(field.getType().isAssignableFrom(By.class)) {
+            return true;
         }
         return false;
     }
