@@ -1,0 +1,71 @@
+[
+  {
+    "scenarioName": "TEst",
+    "pages": [
+      {
+        "pageMethodReports": [
+          {
+            "methodName": "getOnlineCheckInHeaderText",
+            "fields": [
+              "servicesLink",
+              "servicesLink1"
+            ]
+          },
+          {
+            "methodName": "getOnlineCheckInHeaderText1",
+            "fields": [
+              "servicesLink11"
+            ]
+          }
+        ],
+        "pageName": "com.sample.tests.HomePage"
+      }
+    ]
+  },
+  {
+    "scenarioName": "TEst",
+    "pages": [
+      {
+        "pageMethodReports": [
+          {
+            "methodName": "getOnlineCheckInHeaderText",
+            "fields": [
+              "servicesLink",
+              "servicesLink1"
+            ]
+          },
+          {
+            "methodName": "getOnlineCheckInHeaderText1",
+            "fields": [
+              "servicesLink11"
+            ]
+          }
+        ],
+        "pageName": "com.sample.tests.HomePage"
+      }
+    ]
+  },
+  {
+    "scenarioName": "TEst",
+    "pages": [
+      {
+        "pageMethodReports": [
+          {
+            "methodName": "getOnlineCheckInHeaderText",
+            "fields": [
+              "servicesLink",
+              "servicesLink1"
+            ]
+          },
+          {
+            "methodName": "getOnlineCheckInHeaderText1",
+            "fields": [
+              "servicesLink11"
+            ]
+          }
+        ],
+        "pageName": "com.sample.tests.HomePage"
+      }
+    ]
+  }
+]

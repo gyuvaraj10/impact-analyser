@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SampleTest {
+public class SampleTest extends BaseTest {
 
     @Test
     public void testMain() {
@@ -16,7 +16,11 @@ public class SampleTest {
         String actual = "Your Amazon.co.uk";
         WebDriver driver = new ChromeDriver();
         driver.get("https://www.amazon.co.uk/");
-        HomePage page = PageFactory.initElements(driver, HomePage.class);
+        HomePage homePage = getHomePage();
+        homePage.getOnlineCheckInHeaderText1();
+        HomePage page = new HomePage(driver);
+        getHomePage().getOnlineCheckInHeaderText1();
+        getHomePage().getOnlineCheckInHeaderText();
         String onlineText = page.getOnlineCheckInHeaderText();
         page.getOnlineCheckInHeaderText1();
         LandingPage landingPage = new LandingPage(driver);
