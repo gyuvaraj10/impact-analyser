@@ -1,5 +1,6 @@
 package com.impact.analyser;
 
+import com.impact.analyser.rules.PageRules;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.*;
 import org.openqa.selenium.WebElement;
@@ -14,6 +15,27 @@ import static org.objectweb.asm.Type.getInternalName;
  */
 public class RetrievePageNames {
 
+
+    public Map<String, List<String>> getPagesAndMethods(PageRules pageRules, MethodNode testMethodNode) throws Exception {
+        Map<String, List<String>> pageNames = getPagesUsedInTest(testMethodNode);
+        for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
+            if (ain.getType() == AbstractInsnNode.METHOD_INSN) {
+                MethodInsnNode min = (MethodInsnNode) ain;
+                String methodName = min.name;
+                if(methodName.equals("<init>")) {
+                    continue;
+                }
+                String methodOwner = min.owner.replace("/", ".");
+                Optional<String> optional = pageNames.keySet().stream().filter(x->x.equalsIgnoreCase(methodOwner)).findFirst();
+                if(optional.isPresent()) {
+                    String pageName = optional.get();
+                    List<String> pageKey = pageNames.get(pageName);
+                    pageKey.add(methodName);
+                }
+            }
+        }
+        return pageNames;
+    }
 
 
     public Map<String, List<String>> getPagesAndMethods(MethodNode testMethodNode) throws Exception {

@@ -9,6 +9,11 @@ public class CucumberResultReport {
 
     String line;
     String name;
+    String description;
+    String id;
+    String keyword;
+    String uri;
+    List<CucumberElement> elements;
 
     public String getLine() {
         return line;
@@ -65,10 +70,4 @@ public class CucumberResultReport {
     public void setElements(List<CucumberElement> elements) {
         this.elements = elements;
     }
-
-    String description;
-    String id;
-    String keyword;
-    String uri;
-    List<CucumberElement> elements;
 }

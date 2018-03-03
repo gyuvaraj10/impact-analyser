@@ -1,5 +1,9 @@
 package com.impact.analyser;
 
+import com.impact.analyser.report.MethodReport;
+import com.impact.analyser.report.PageReport;
+import com.impact.analyser.rules.ElementRules;
+import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.tree.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -10,62 +14,204 @@ import org.openqa.selenium.support.FindBys;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
 public class PageEngine {
 
-
-    public Map<String, List<String>> getSeleniumFieldsFromEachMethod(Class<?> pageClass) throws NoSuchFieldException {
-        Map<String, List<String>> methodItems = new HashMap<>();
-        ClassNode classNode = ClassUtils.getClassNode(pageClass);
-        for(MethodNode methodNode: classNode.methods) {
-            methodItems.putAll(getSeleniumFields(classNode, methodNode, pageClass));
+    public List<PageReport> getSeleniumFieldsFromPageMethod(ElementRules elementRules) throws NoSuchFieldException {
+        List<PageReport> pageReports = new ArrayList<>();
+        if (elementRules.isElementsDefinedWithInPageClassOnly()) {
+            Set<Class<?>> allPageClasses = ClassUtils.getAllTypesInPackages(elementRules.getPageClassPackages());
+            pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), null, allPageClasses));
+        } else {
+            Set<Class<?>> allElementClasses = ClassUtils.getAllTypesInPackages(elementRules.getElementClassPackages());
+            Map<String, List<String>> classAndFields = getSeleniumFieldsFromClasses(allElementClasses);
+            Set<Class<?>> allPageClasses = ClassUtils.getAllTypesInPackages(elementRules.getPageClassPackages());
+            pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), classAndFields, allPageClasses));
         }
-        return methodItems;
+        return pageReports;
     }
 
-    private Map<String, List<String>> getSeleniumFields(ClassNode classNode, MethodNode methodNode, Class<?> pageClass) throws NoSuchFieldException {
-        Map<String, List<String>> methodItems = new HashMap<>();
-        String methodName = methodNode.name;
-        List<String> methodFields = new ArrayList<>();
-        if (!methodName.equals("<init>")) {
-            for (AbstractInsnNode abstractInsnNode : methodNode.instructions.toArray()) {
-                if (abstractInsnNode.getType() == AbstractInsnNode.FIELD_INSN) {
-                    FieldInsnNode fin = (FieldInsnNode) abstractInsnNode;
-                    if (isSeleniumField(getClassAndSuperClassField(pageClass,fin.name))) {
-                        methodFields.add(fin.name);
+    /**
+     *
+     * @param elementsInPageClass
+     * @param classAndFields
+     * @param allPageClasses
+     * @return {pageMethodName: {fieldName: elementClassName}}
+     * @throws NoSuchFieldException
+     */
+    private List<PageReport> getSeleniumFields(boolean elementsInPageClass,
+                                               Map<String, List<String>> classAndFields,
+                                               Set<Class<?>> allPageClasses) throws NoSuchFieldException {
+        if(elementsInPageClass) {
+            return getPageReportsForElementsWithInPageClassesOnly(allPageClasses);
+        } else {
+            return getPageReportsForElementsInDifferentClass(classAndFields, allPageClasses);
+        }
+    }
+
+    private List<PageReport> getPageReportsForElementsInDifferentClass(Map<String, List<String>> classAndFields,
+                                                                       Set<Class<?>> allPageClasses) {
+        List<PageReport> pageReports = new ArrayList<>();
+        for(Class<?> pageClass: allPageClasses) {
+            PageReport pageReport = new PageReport();
+            pageReport.setPageName(pageClass.getName());
+            Set<MethodReport> methodReports = new HashSet<>();
+            ClassNode pageClassNode = ClassUtils.getClassNode(pageClass);
+            List<MethodNode> pageMethods = pageClassNode.methods;
+            for(MethodNode methodNode: pageMethods) {
+                String methodName = methodNode.name;
+                if (!methodName.equals("<init>")) {
+                    MethodReport methodReport = new MethodReport();
+                    methodReport.setMethodName(methodName);
+                    Map<String, String> fieldAndFieldClassName = new HashMap<>();
+                    List<String> privateMethods = new ArrayList<>();
+                    for(AbstractInsnNode abstractInsnNode: methodNode.instructions.toArray()) {
+                        if (abstractInsnNode.getType() == AbstractInsnNode.FIELD_INSN) {
+                            FieldInsnNode fin = (FieldInsnNode) abstractInsnNode;
+                            String className = fin.owner.replace("/",".");
+                            String classOb = classAndFields.entrySet().stream()
+                                    .filter(x->x.getKey().equals(className))
+                                    .findFirst().get().getKey();
+                            Class<?> page = ClassUtils.getClass(classOb);
+                            Field field =getClassField(page, fin.name);
+                            if (field!= null && isSeleniumField(field)) {
+                                fieldAndFieldClassName.put(fin.name, className);
+                            }
+                        }
+                        if(abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
+                            ClassNode classNode = ClassUtils.getClassNode(pageClass);
+                            MethodInsnNode insnNode = (MethodInsnNode)abstractInsnNode;
+                            Optional<MethodNode> optional = classNode.methods.stream().filter(x->x.name.equals(insnNode.name)).findFirst();
+                            if(optional.isPresent()) {
+                                privateMethods.add(optional.get().name);
+                            }
+                        }
                     }
-                }
-                if(abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
-                    MethodInsnNode insnNode = (MethodInsnNode)abstractInsnNode;
-                    Optional<MethodNode> optional = classNode.methods.stream().filter(x->x.name.equals(insnNode.name)).findFirst();
-                    if(optional.isPresent()) {
-                        methodItems.putAll(getSeleniumFields(classNode, optional.get(), pageClass));
+                    if(privateMethods.size() >0){
+                        methodReport.setSameClassMethods(privateMethods);
+                    }
+                    boolean fieldAdd = false;
+                    boolean privateMethodAdd = false;
+                    if(fieldAndFieldClassName.size()>0) {
+                        methodReport.setFieldAndFieldClassName(fieldAndFieldClassName);
+                        fieldAdd = true;
+                    }
+                    for(MethodReport mR: methodReports) {
+                        if(privateMethods.contains(mR.getMethodName())){
+                            privateMethodAdd = true;
+                            break;
+                        }
+                    }
+                    if(fieldAdd|| privateMethodAdd) {
+                        methodReports.add(methodReport);
                     }
                 }
             }
-            if(methodFields.size() >0 ) {
-                methodItems.put(methodName, methodFields);
+            if(methodReports.size()>0) {
+                pageReport.setMethodReportList(methodReports);
+                pageReports.add(pageReport);
             }
         }
-        return methodItems;
+        return pageReports;
     }
 
-    private Field getClassAndSuperClassField(Class<?> pageClass, String fieldName) {
+    private List<PageReport> getPageReportsForElementsWithInPageClassesOnly(Set<Class<?>> allPageClasses) {
+        List<PageReport> pageReports = new ArrayList<>();
+        for(Class<?> pageClass: allPageClasses) {
+            PageReport pageReport = new PageReport();
+            pageReport.setPageName(pageClass.getName());
+            Set<MethodReport> methodReports = new HashSet<>();
+            ClassNode pageClassNode = ClassUtils.getClassNode(pageClass);
+            List<MethodNode> pageMethods = pageClassNode.methods;
+            for(MethodNode methodNode: pageMethods) {
+                String methodName = methodNode.name;
+                if (!methodName.equals("<init>")) {
+                    MethodReport methodReport = new MethodReport();
+                    methodReport.setMethodName(methodName);
+                    Map<String, String> fieldAndFieldClassName = new HashMap<>();
+                    List<String> privateMethods = new ArrayList<>();
+                    for(AbstractInsnNode abstractInsnNode: methodNode.instructions.toArray()) {
+                        if (abstractInsnNode.getType() == AbstractInsnNode.FIELD_INSN) {
+                            FieldInsnNode fin = (FieldInsnNode) abstractInsnNode;
+                            Class<?> page = pageClass;
+                            Field field = getClassField(page, fin.name);
+                            if(field == null) {
+                                page = pageClass.getSuperclass();
+                                field = getClassField(pageClass.getSuperclass(), fin.name);
+                            }
+                            if (field!=null && isSeleniumField(field)) {
+                                fieldAndFieldClassName.put(fin.name, page.getName());
+                            }
+                        }
+                        if(abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
+                            ClassNode classNode = ClassUtils.getClassNode(pageClass);
+                            MethodInsnNode insnNode = (MethodInsnNode)abstractInsnNode;
+                            Optional<MethodNode> optional = classNode.methods.stream().filter(x->x.name.equals(insnNode.name)).findFirst();
+                            if(optional.isPresent()) {
+                                privateMethods.add(optional.get().name);
+                            }
+                        }
+                    }
+                    if(privateMethods.size() >0){
+                        methodReport.setSameClassMethods(privateMethods);
+                    }
+                    if(fieldAndFieldClassName.size()>0) {
+                        methodReport.setFieldAndFieldClassName(fieldAndFieldClassName);
+                        methodReports.add(methodReport);
+                    }
+                }
+            }
+            if(methodReports.size()>0) {
+                pageReport.setMethodReportList(methodReports);
+                pageReports.add(pageReport);
+            }
+        }
+        return pageReports;
+    }
+    /**
+     * returns field object from the fieldName
+     * @param pageClass
+     * @param fieldName
+     * @return
+     */
+    private Field getClassField(Class<?> pageClass, String fieldName) {
         Field field = null;
         try {
             field = pageClass.getDeclaredField(fieldName);
         } catch (NoSuchFieldException ex) {
-            try {
-                field = pageClass.getSuperclass().getDeclaredField(fieldName);
-            } catch (NoSuchFieldException e) {
-            }
         }
         return field;
     }
 
+    /**
+     * returns a map of class name and selneium fields
+     * @param classSet
+     * @return
+     */
+    private Map<String, List<String>> getSeleniumFieldsFromClasses(Set<Class<?>> classSet) {
+        Map<String, List<String>> map = new HashMap<>();
+        Iterator<Class<?>> iterator = classSet.iterator();
+        while (iterator.hasNext()) {
+            Class<?> elementClass = iterator.next();
+            Field[] allFields = ArrayUtils.addAll(elementClass.getDeclaredFields(), elementClass.getSuperclass().getDeclaredFields());
+            List<String> seleniumFields = Arrays.stream(allFields).filter(this::isSeleniumField)
+                    .map(x->x.getName()).collect(Collectors.toList());
+            if(seleniumFields.size()>0) {
+                map.put(elementClass.getName(), seleniumFields);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * verifies if the field is a selenium field
+     * @param field
+     * @return
+     */
     private boolean isSeleniumField(Field field) {
         if(field.getType().isAssignableFrom(WebElement.class)) {
             return true;

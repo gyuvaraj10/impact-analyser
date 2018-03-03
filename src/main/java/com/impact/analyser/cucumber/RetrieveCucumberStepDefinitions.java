@@ -18,10 +18,10 @@ import static org.objectweb.asm.Type.getInternalName;
  */
 public class RetrieveCucumberStepDefinitions {
 
-    public Map<String, MethodNode> getCucumberStepDefinitions(CucumberResultReport dryRunResultReport, String[] glues) throws ClassNotFoundException, IOException {
+    public Map<String, MethodNode> getCucumberStepAndDefinitionForAScenario(CucumberResultReport scenario, String[] glues) throws ClassNotFoundException, IOException {
         Map<String, MethodNode> stepDefs = new HashMap<>();
         ClassLoader loader = ClassLoader.getSystemClassLoader();
-        for(CucumberElement element: dryRunResultReport.getElements()) {
+        for(CucumberElement element: scenario.getElements()) {
             for(CucumberStep step: element.getSteps()) {
                 String location = step.getStepMatch().getLocation();
                 if(!location.equals("undefined")) {
