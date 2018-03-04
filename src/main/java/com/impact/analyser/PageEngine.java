@@ -1,7 +1,7 @@
 package com.impact.analyser;
 
-import com.impact.analyser.report.MethodReport;
-import com.impact.analyser.report.PageReport;
+import com.impact.analyser.report.MethodInfo;
+import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.rules.ElementRules;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.tree.*;
@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
  */
 public class PageEngine {
 
-    public List<PageReport> getSeleniumFieldsFromPageMethod(ElementRules elementRules) throws NoSuchFieldException {
-        List<PageReport> pageReports = new ArrayList<>();
+    public List<PageInfo> getSeleniumFieldsFromPageMethod(ElementRules elementRules) throws NoSuchFieldException {
+        List<PageInfo> pageReports = new ArrayList<>();
         if (elementRules.isElementsDefinedWithInPageClassOnly()) {
             Set<Class<?>> allPageClasses = ClassUtils.getAllTypesInPackages(elementRules.getPageClassPackages());
             pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), null, allPageClasses));
@@ -43,9 +43,9 @@ public class PageEngine {
      * @return {pageMethodName: {fieldName: elementClassName}}
      * @throws NoSuchFieldException
      */
-    private List<PageReport> getSeleniumFields(boolean elementsInPageClass,
-                                               Map<String, List<String>> classAndFields,
-                                               Set<Class<?>> allPageClasses) throws NoSuchFieldException {
+    private List<PageInfo> getSeleniumFields(boolean elementsInPageClass,
+                                             Map<String, List<String>> classAndFields,
+                                             Set<Class<?>> allPageClasses) throws NoSuchFieldException {
         if(elementsInPageClass) {
             return getPageReportsForElementsWithInPageClassesOnly(allPageClasses);
         } else {
@@ -53,19 +53,19 @@ public class PageEngine {
         }
     }
 
-    private List<PageReport> getPageReportsForElementsInDifferentClass(Map<String, List<String>> classAndFields,
-                                                                       Set<Class<?>> allPageClasses) {
-        List<PageReport> pageReports = new ArrayList<>();
+    private List<PageInfo> getPageReportsForElementsInDifferentClass(Map<String, List<String>> classAndFields,
+                                                                     Set<Class<?>> allPageClasses) {
+        List<PageInfo> pageReports = new ArrayList<>();
         for(Class<?> pageClass: allPageClasses) {
-            PageReport pageReport = new PageReport();
+            PageInfo pageReport = new PageInfo();
             pageReport.setPageName(pageClass.getName());
-            Set<MethodReport> methodReports = new HashSet<>();
+            Set<MethodInfo> methodReports = new HashSet<>();
             ClassNode pageClassNode = ClassUtils.getClassNode(pageClass);
             List<MethodNode> pageMethods = pageClassNode.methods;
             for(MethodNode methodNode: pageMethods) {
                 String methodName = methodNode.name;
                 if (!methodName.equals("<init>")) {
-                    MethodReport methodReport = new MethodReport();
+                    MethodInfo methodReport = new MethodInfo();
                     methodReport.setMethodName(methodName);
                     Map<String, String> fieldAndFieldClassName = new HashMap<>();
                     List<String> privateMethods = new ArrayList<>();
@@ -73,13 +73,19 @@ public class PageEngine {
                         if (abstractInsnNode.getType() == AbstractInsnNode.FIELD_INSN) {
                             FieldInsnNode fin = (FieldInsnNode) abstractInsnNode;
                             String className = fin.owner.replace("/",".");
-                            String classOb = classAndFields.entrySet().stream()
+                            Optional<Map.Entry<String, List<String>>> cb = classAndFields.entrySet().stream()
                                     .filter(x->x.getKey().equals(className))
-                                    .findFirst().get().getKey();
-                            Class<?> page = ClassUtils.getClass(classOb);
-                            Field field =getClassField(page, fin.name);
-                            if (field!= null && isSeleniumField(field)) {
-                                fieldAndFieldClassName.put(fin.name, className);
+                                    .findFirst();
+                            if(cb.isPresent()) {
+                                String classOb = cb.get().getKey();
+                                Class<?> page = ClassUtils.getClass(classOb);
+                                Field field = getClassField(page, fin.name);
+                                if(field==null) {
+                                    field = getClassField(page.getSuperclass(), fin.name);
+                                }
+                                if (field != null && isSeleniumField(field)) {
+                                    fieldAndFieldClassName.put(fin.name, className);
+                                }
                             }
                         }
                         if(abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
@@ -100,7 +106,7 @@ public class PageEngine {
                         methodReport.setFieldAndFieldClassName(fieldAndFieldClassName);
                         fieldAdd = true;
                     }
-                    for(MethodReport mR: methodReports) {
+                    for(MethodInfo mR: methodReports) {
                         if(privateMethods.contains(mR.getMethodName())){
                             privateMethodAdd = true;
                             break;
@@ -119,18 +125,18 @@ public class PageEngine {
         return pageReports;
     }
 
-    private List<PageReport> getPageReportsForElementsWithInPageClassesOnly(Set<Class<?>> allPageClasses) {
-        List<PageReport> pageReports = new ArrayList<>();
+    private List<PageInfo> getPageReportsForElementsWithInPageClassesOnly(Set<Class<?>> allPageClasses) {
+        List<PageInfo> pageReports = new ArrayList<>();
         for(Class<?> pageClass: allPageClasses) {
-            PageReport pageReport = new PageReport();
+            PageInfo pageReport = new PageInfo();
             pageReport.setPageName(pageClass.getName());
-            Set<MethodReport> methodReports = new HashSet<>();
+            Set<MethodInfo> methodReports = new HashSet<>();
             ClassNode pageClassNode = ClassUtils.getClassNode(pageClass);
             List<MethodNode> pageMethods = pageClassNode.methods;
             for(MethodNode methodNode: pageMethods) {
                 String methodName = methodNode.name;
                 if (!methodName.equals("<init>")) {
-                    MethodReport methodReport = new MethodReport();
+                    MethodInfo methodReport = new MethodInfo();
                     methodReport.setMethodName(methodName);
                     Map<String, String> fieldAndFieldClassName = new HashMap<>();
                     List<String> privateMethods = new ArrayList<>();

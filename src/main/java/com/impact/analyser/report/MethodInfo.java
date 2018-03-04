@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Created by Yuvaraj on 03/03/2018.
  */
-public class MethodReport {
+public class MethodInfo {
 
     private String methodName;
     private List<String> privateMethods;

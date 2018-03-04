@@ -1,50 +1,63 @@
-//package com.impact.analyser;
-//
-////import com.impact.analyser.report.PageMethodFieldReport;
-//import com.impact.analyser.report.PageReport;
-//import com.impact.analyser.report.TestReport;
-//import org.objectweb.asm.tree.MethodNode;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.Map;
-//
-///**
-// * Created by Yuvaraj on 27/02/2018.
-// */
-//public class TDDCollector {
-//
-//    RetrieveJUnitTests jUnitTests = new RetrieveJUnitTests();
-//    RetrievePageNames retrievePageNames = new RetrievePageNames();
-//    PageEngine pageEngine = new PageEngine();
-//
-//
-//    public List<TestReport> collectReport(Class<?> testClass)  throws Exception {
-//        List<TestReport> testReports = new ArrayList<>();
-//        List<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
-//        for(MethodNode testMethod: tests) {
-//            TestReport testReport = new TestReport();
-//            testReport.setTestName(testMethod.name);
-//            Map<String, List<String>> pagesAndMethodsUsedInTest = retrievePageNames.getPagesAndMethods(testMethod);
-//            List<PageReport> pageReportList = new ArrayList<>();
-//            for (Map.Entry<String, List<String>> entry : pagesAndMethodsUsedInTest.entrySet()) {
-//                PageReport pageReport = new PageReport();
-//                pageReport.setPageName(entry.getKey());
-//                Map<String, List<String>> methodFieldMap = pageEngine.getSeleniumFieldsFromEachMethod(Class.forName(entry.getKey()));
-//                List<PageMethodFieldReport> pageMethodReportList = new ArrayList<>();
-//                for (Map.Entry<String, List<String>> entry1 : methodFieldMap.entrySet()) {
-//                    //page method report
-//                    PageMethodFieldReport pageMethodReport = new PageMethodFieldReport();
-//                    pageMethodReport.setMethodName(entry1.getKey());
-//                    pageMethodReport.setFields(methodFieldMap.get(entry1.getKey()));
-//                    pageMethodReportList.add(pageMethodReport);
-//                }
-//                pageReport.setPageMethodReports(pageMethodReportList);
-//                pageReportList.add(pageReport);
-//            }
-//            testReport.setPages(pageReportList);
-//            testReports.add(testReport);
-//        }
-//        return testReports;
-//    }
-//}
+package com.impact.analyser;
+
+//import com.impact.analyser.report.PageMethodFieldReport;
+import com.impact.analyser.report.MethodInfo;
+import com.impact.analyser.report.PageInfo;
+import com.impact.analyser.report.TestReport;
+import com.impact.analyser.rules.ElementRules;
+import com.impact.analyser.rules.PageRules;
+import org.objectweb.asm.tree.MethodNode;
+
+import java.util.*;
+
+/**
+ * Created by Yuvaraj on 27/02/2018.
+ */
+public class TDDCollector {
+
+    private final RetrieveJUnitTests jUnitTests;
+    private final RetrievePageNames retrievePageNames = new RetrievePageNames();
+    private final PageEngine pageEngine = new PageEngine();
+    private final PageRules pageRules;
+    private final ElementRules elementRules;
+
+    public TDDCollector(PageRules pageRules, ElementRules elementRules) {
+        this.pageRules = pageRules;
+        this.elementRules = elementRules;
+        jUnitTests = new RetrieveJUnitTests(pageRules);
+    }
+
+    public List<TestReport> collectReport(Class<?> testClass)  throws Exception {
+        List<TestReport> testReports = new ArrayList<>();
+        Set<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
+        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules);
+        for(MethodNode testMethod: tests) {
+            TestReport testReport = new TestReport();
+            testReport.setTestName(testMethod.name);
+            Map<String, Set<String>> pagesAndMethodsUsedInTest = retrievePageNames.getPagesAndMethods(testMethod);
+            List<PageInfo> pageReportList = new ArrayList<>();
+            for (Map.Entry<String, Set<String>> entry : pagesAndMethodsUsedInTest.entrySet()) {
+                Optional<PageInfo> optional = pageInfos.stream().filter(x->x.getPageName().equals(entry.getKey())).findFirst();
+                PageInfo pageReport = null;
+                if(optional.isPresent()) {
+                    pageReport = optional.get();
+                    Set<MethodInfo> methodInfoSet = pageReport.getMethodReportList();
+                    Set<MethodInfo> methodReport = new HashSet<>();
+                    for(String method: entry.getValue()) {
+                        Optional<MethodInfo> methodInfoOptional = methodInfoSet.stream()
+                                .filter(x->x.getMethodName().equals(method))
+                                .findFirst();
+                        if(methodInfoOptional.isPresent()) {
+                            methodReport.add(methodInfoOptional.get());
+                        }
+                    }
+                    pageReport.setMethodReportList(methodReport);
+                    pageReportList.add(pageReport);
+                }
+            }
+            testReport.setPages(pageReportList);
+            testReports.add(testReport);
+        }
+        return testReports;
+    }
+}

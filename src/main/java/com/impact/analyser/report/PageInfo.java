@@ -1,18 +1,15 @@
 package com.impact.analyser.report;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
-public class PageReport {
-
+public class PageInfo {
 
     private String pageName;
 
-    private Set<MethodReport> methodReportList;
+    private Set<MethodInfo> methodReportList;
 
     public String getPageName() {
         return pageName;
@@ -22,13 +19,11 @@ public class PageReport {
         this.pageName = pageName;
     }
 
-    public Set<MethodReport> getMethodReportList() {
+    public Set<MethodInfo> getMethodReportList() {
         return methodReportList;
     }
 
-    public void setMethodReportList(Set<MethodReport> methodReportList) {
+    public void setMethodReportList(Set<MethodInfo> methodReportList) {
         this.methodReportList = methodReportList;
     }
-
-
 }

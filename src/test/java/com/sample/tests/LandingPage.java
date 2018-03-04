@@ -1,5 +1,6 @@
 package com.sample.tests;
 
+import com.sample.elements.otherclass.ElementsInOtherClass;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -37,6 +38,7 @@ public class LandingPage extends BaseSeleniumPage {
     }
 
     public void login() {
+        ElementsInOtherClass.userName.toString();
         servicesLink11.get(0).click();
         baseElement.click();
     }

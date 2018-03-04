@@ -16,8 +16,8 @@ import static org.objectweb.asm.Type.getInternalName;
 public class RetrievePageNames {
 
 
-    public Map<String, List<String>> getPagesAndMethods(PageRules pageRules, MethodNode testMethodNode) throws Exception {
-        Map<String, List<String>> pageNames = getPagesUsedInTest(testMethodNode);
+    public Map<String, Set<String>> getPagesAndMethods(PageRules pageRules, MethodNode testMethodNode) throws Exception {
+        Map<String, Set<String>> pageNames = getPagesUsedInTest(testMethodNode);
         for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
             if (ain.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode min = (MethodInsnNode) ain;
@@ -29,7 +29,7 @@ public class RetrievePageNames {
                 Optional<String> optional = pageNames.keySet().stream().filter(x->x.equalsIgnoreCase(methodOwner)).findFirst();
                 if(optional.isPresent()) {
                     String pageName = optional.get();
-                    List<String> pageKey = pageNames.get(pageName);
+                    Set<String> pageKey = pageNames.get(pageName);
                     pageKey.add(methodName);
                 }
             }
@@ -38,8 +38,8 @@ public class RetrievePageNames {
     }
 
 
-    public Map<String, List<String>> getPagesAndMethods(MethodNode testMethodNode) throws Exception {
-        Map<String, List<String>> pageNames = getPagesUsedInTest(testMethodNode);
+    public Map<String, Set<String>> getPagesAndMethods(MethodNode testMethodNode) throws Exception {
+        Map<String, Set<String>> pageNames = getPagesUsedInTest(testMethodNode);
         for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
             if (ain.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode min = (MethodInsnNode) ain;
@@ -51,7 +51,7 @@ public class RetrievePageNames {
                 Optional<String> optional = pageNames.keySet().stream().filter(x->x.equalsIgnoreCase(methodOwner)).findFirst();
                 if(optional.isPresent()) {
                     String pageName = optional.get();
-                    List<String> pageKey = pageNames.get(pageName);
+                    Set<String> pageKey = pageNames.get(pageName);
                     pageKey.add(methodName);
                 }
             }
@@ -59,8 +59,8 @@ public class RetrievePageNames {
         return pageNames;
     }
 
-    public Map<String, List<String>> getPagesUsedInTest(MethodNode testMethodNode) {
-        Map<String, List<String>> pageClasses = new HashMap<>();
+    public Map<String, Set<String>> getPagesUsedInTest(MethodNode testMethodNode) {
+        Map<String, Set<String>> pageClasses = new HashMap<>();
         for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
             if (ain.getType() == AbstractInsnNode.TYPE_INSN) {
                 TypeInsnNode fin = (TypeInsnNode) ain;
@@ -72,7 +72,7 @@ public class RetrievePageNames {
                             .replace("/",".").replace("L","").replace(";",""))
                             .isAssignableFrom(WebElement.class)).findFirst();
                     if(optional.isPresent()) {
-                        pageClasses.put(classFromTestMethod.getName(), new ArrayList<>());
+                        pageClasses.put(classFromTestMethod.getName(), new HashSet<>());
                     }
 
                 } catch (ClassCastException ex) {
