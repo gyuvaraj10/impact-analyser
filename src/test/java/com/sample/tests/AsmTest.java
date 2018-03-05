@@ -36,13 +36,14 @@ public class AsmTest {
     @Test
     public void testTDDCollector()  throws Exception {
         PageRules pageRules = new PageRules();
+        pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
         ElementRules elementRules = new ElementRules();
         elementRules.setElementsDefinedWithInPageClassOnly(false);
         elementRules.setElementClassPackages(Arrays.asList("com.sample"));
         elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
         TDDCollector tddCollector = new TDDCollector(pageRules, elementRules);
         System.out.println(new Gson().toJson(tddCollector
-                .collectReport(SampleTest.class)));
+                .collectReportForAPackage(new String[]{"com.sample.tests"})));
     }
 
     @Test

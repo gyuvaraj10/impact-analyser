@@ -8,6 +8,7 @@ import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
@@ -27,7 +28,31 @@ public class TDDCollector {
         jUnitTests = new RetrieveJUnitTests(pageRules);
     }
 
-    public List<TestReport> collectReport(Class<?> testClass)  throws Exception {
+
+    public Map<String, List<TestReport>> collectReportForAPackage(String[] testspackage) throws Exception {
+        Map<String, List<TestReport>> testReportmap= new HashMap<>();
+        for(String testPackage: testspackage) {
+            for(Class<?> testClass: ClassUtils.getAllTypesInPackages(Collections.singletonList(testPackage))) {
+                if(isTestClass(testClass)) {
+                    testReportmap.put(testClass.getName(), collectReport(testClass));
+                }
+            }
+        }
+        return testReportmap;
+    }
+
+    private boolean isTestClass(Class<?> testClass) {
+        Annotation jUnitANno = testClass.getDeclaredAnnotation(org.junit.Test.class);
+        Annotation testNGAnno = testClass.getDeclaredAnnotation(org.testng.annotations.Test.class);
+        boolean testMethodExists = Arrays.stream(testClass.getDeclaredMethods())
+                .anyMatch(x->(x.getDeclaredAnnotation(org.junit.Test.class)!=null)||
+                        (x.getDeclaredAnnotation(org.testng.annotations.Test.class)!=null));
+        if(jUnitANno != null || testNGAnno != null ||testMethodExists) {
+            return true;
+        }
+        return false;
+    }
+    private List<TestReport> collectReport(Class<?> testClass)  throws Exception {
         List<TestReport> testReports = new ArrayList<>();
         Set<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
         List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules);
