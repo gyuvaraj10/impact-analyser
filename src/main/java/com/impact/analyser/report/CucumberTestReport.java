@@ -7,6 +7,7 @@ import java.util.List;
  */
 public class CucumberTestReport {
 
+
     public String getScenarioName() {
         return scenarioName;
     }
@@ -15,9 +16,13 @@ public class CucumberTestReport {
         this.scenarioName = scenarioName;
     }
 
-    private String scenarioName;
+    public String getFeatureFileName() {
+        return featureFileName;
+    }
 
-    private List<CucumberStepDef> stepDefs;
+    public void setFeatureFileName(String featureFileName) {
+        this.featureFileName = featureFileName;
+    }
 
     public List<CucumberStepDef> getStepDefs() {
         return stepDefs;
@@ -26,4 +31,10 @@ public class CucumberTestReport {
     public void setStepDefs(List<CucumberStepDef> stepDefs) {
         this.stepDefs = stepDefs;
     }
+
+    private String featureFileName;
+
+    private String scenarioName;
+
+    private List<CucumberStepDef> stepDefs;
 }

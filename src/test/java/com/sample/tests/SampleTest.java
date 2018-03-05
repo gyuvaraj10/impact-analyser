@@ -10,20 +10,19 @@ import static org.junit.Assert.assertEquals;
 
 public class SampleTest extends BaseTest {
 
+    HomePage page1;
+
     @Test
     public void testMain() {
         System.setProperty("webdriver.chrome.driver","/Users/Yuvaraj/Desktop/softwares/chromedriver/chromedriver");
         String actual = "Your Amazon.co.uk";
-        WebDriver driver = new ChromeDriver();
-        driver.get("https://www.amazon.co.uk/");
-        HomePage homePage = getHomePage();
-        homePage.getOnlineCheckInHeaderText1();
-        HomePage page = new HomePage(driver);
-        getHomePage().getOnlineCheckInHeaderText1();
-        getHomePage().getOnlineCheckInHeaderText();
+//        WebDriver driver = new ChromeDriver();
+//        driver.get("https://www.amazon.co.uk/");
+        page1.getOnlineCheckInHeaderText();
+        HomePage page = new HomePage(null);
         String onlineText = page.getOnlineCheckInHeaderText();
         page.getOnlineCheckInHeaderText1();
-        LandingPage landingPage = new LandingPage(driver);
+        LandingPage landingPage = new LandingPage(null);
         landingPage.getasdkaskd();
         landingPage.login();
         assertEquals(onlineText, actual);

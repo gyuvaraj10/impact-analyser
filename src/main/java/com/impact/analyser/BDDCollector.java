@@ -2,12 +2,15 @@ package com.impact.analyser;
 
 
 import com.impact.analyser.cucumber.RetrieveCucumberStepDefinitions;
+import com.impact.analyser.cucumber.models.CucumberElement;
 import com.impact.analyser.cucumber.models.CucumberReportFormatter;
 import com.impact.analyser.cucumber.models.CucumberResultReport;
 import com.impact.analyser.report.CucumberStepDef;
 import com.impact.analyser.report.CucumberTestReport;
-import com.impact.analyser.report.PageMethodReport;
-import com.impact.analyser.report.PageReport;
+import com.impact.analyser.report.MethodInfo;
+import com.impact.analyser.report.PageInfo;
+import com.impact.analyser.rules.ElementRules;
+import com.impact.analyser.rules.PageRules;
 import cucumber.api.cli.Main;
 
 import org.apache.commons.io.FileUtils;
@@ -23,15 +26,77 @@ import java.util.*;
  */
 public class BDDCollector {
 
-    RetrieveCucumberStepDefinitions cucumberStepDefinitions = new RetrieveCucumberStepDefinitions();
-    RetrievePageNames retrievePageNames = new RetrievePageNames();
-    PageEngine pageEngine = new PageEngine();
+    private final RetrieveCucumberStepDefinitions cucumberStepDefinitions = new RetrieveCucumberStepDefinitions();
+    private final RetrievePageNames retrievePageNames = new RetrievePageNames();
+    private final PageEngine pageEngine = new PageEngine();
+    private final PageRules pageRules;
+    private final ElementRules elementRules;
 
+    public BDDCollector(PageRules pageRules, ElementRules elementRules) {
+        this.pageRules = pageRules;
+        this.elementRules = elementRules;
+    }
 
+    public List<CucumberTestReport> collectReport(String[] glue, String featureFilePath) throws Exception {
+        List<CucumberResultReport> scenarios = getScenarios(glue, featureFilePath);
+        List<CucumberTestReport> testReports = new ArrayList<>();
+        Map<String, Map<String, MethodNode>> scenarioStepDefDetailMap = new HashMap<>();
+        Iterator<CucumberResultReport> iterator = scenarios.iterator();
+        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules);
+        while(iterator.hasNext()) {
+            CucumberResultReport feature = iterator.next();
+            scenarioStepDefDetailMap = cucumberStepDefinitions.getCucumberStepAndDefinitionForAScenario(feature, glue);
+            for (Map.Entry<String, Map<String, MethodNode>> scenario : scenarioStepDefDetailMap.entrySet()) {
+                CucumberTestReport cucumberReport = new CucumberTestReport();
+                cucumberReport.setFeatureFileName(feature.getName());
+                cucumberReport.setScenarioName(scenario.getKey());
+                List<CucumberStepDef> stepDefs = new ArrayList<>();
+                for (Map.Entry<String, MethodNode> entry : scenario.getValue().entrySet()) {
+                    CucumberStepDef stepDef = new CucumberStepDef();
+                    String stepName = entry.getKey();
+                    stepDef.setName(stepName);
+                    MethodNode stepDefinition = entry.getValue();
+                    Map<String, Set<String>> pageAndPageMethodsMap = retrievePageNames.getPagesAndMethods(pageRules, stepDefinition);
+                    List<PageInfo> pageReportList = new ArrayList<>();
+                    for (Map.Entry<String, Set<String>> methodEntry : pageAndPageMethodsMap.entrySet()) {
+                        Optional<PageInfo> optional = pageInfos.stream().filter(x -> x.getPageName().equals(methodEntry.getKey())).findFirst();
+                        PageInfo pageReport = new PageInfo();
+                        if (optional.isPresent()) {
+                            PageInfo pageReport1 = optional.get();
+                            pageReport.setPageName(pageReport1.getPageName());
+                            Set<MethodInfo> methodInfoSet = pageReport1.getMethodReportList();
+                            Set<MethodInfo> methodReport = new HashSet<>();
+                            for (String method : methodEntry.getValue()) {
+                                Optional<MethodInfo> methodInfoOptional = methodInfoSet.stream()
+                                        .filter(x -> x.getMethodName().equals(method))
+                                        .findFirst();
+                                if (methodInfoOptional.isPresent()) {
+                                    methodReport.add(methodInfoOptional.get());
+                                }
+                            }
+                            pageReport.setMethodReportList(methodReport);
+                            pageReportList.add(pageReport);
+                        }
+                    }
+                    stepDef.setPages(pageReportList);
+                    stepDefs.add(stepDef);
+                }
+                cucumberReport.setStepDefs(stepDefs);
+                testReports.add(cucumberReport);
+            }
+        }
+        return testReports;
+    }
 
-    public List<CucumberResultReport> getStepDefinitions(String[] glues, String featureFilePath) throws IOException {
+    /**
+     * gets the list of step definitions for the list of scenarios by parsing the cucumber report json file
+     * @param glues
+     * @param featureFilePath
+     * @return
+     * @throws IOException
+     */
+    private List<CucumberResultReport> getScenarios(String[] glues, String featureFilePath) throws IOException {
         String reportJson = "result.json";
-        String scenarioName = "You naughty";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         String[] cucumberArgs = new String[7+glues.length];
         int start = 0;
@@ -45,56 +110,10 @@ public class BDDCollector {
         cucumberArgs[start++] = "json:"+ reportJson;
         cucumberArgs[start++] = "-m";
         cucumberArgs[start++] = "-d";
-        cucumberArgs[start++] = featureFilePath;
+        cucumberArgs[start] = featureFilePath;
 
         Main.run(cucumberArgs, loader);
         String content = FileUtils.readFileToString(new File(reportJson), Charset.defaultCharset());
-        List<CucumberResultReport> resultReport = CucumberReportFormatter.parse(content);
-        System.out.println(resultReport.toString());
-        return resultReport;
-    }
-
-    public List<CucumberTestReport> collectReport(String[] glue, String featureFilePath) throws Exception {
-        List<CucumberResultReport> scenarios = getStepDefinitions(glue, featureFilePath);
-        List<CucumberTestReport> testReports = new ArrayList<>();
-        Map<String, Map<String, MethodNode>> scenarioMap = new HashMap<>();
-        Iterator<CucumberResultReport> iterator = scenarios.iterator();
-        while(iterator.hasNext()) {
-            CucumberResultReport scenario = iterator.next();
-            scenarioMap.put(scenario.getName(), cucumberStepDefinitions.getCucumberStepDefinitions(scenario, glue));
-        }
-        for(Map.Entry<String, Map<String, MethodNode>> scenario: scenarioMap.entrySet()) {
-            CucumberTestReport cucumberReport = new CucumberTestReport();
-            cucumberReport.setScenarioName(scenario.getKey());
-            List<CucumberStepDef> stepDefs= new ArrayList<>();
-            for(Map.Entry<String, MethodNode> entry: scenario.getValue().entrySet()) {
-                CucumberStepDef stepDef= new CucumberStepDef();
-                String stepName = entry.getKey();
-                stepDef.setName(stepName);
-                MethodNode stepDefinition = entry.getValue();
-                Map<String, List<String>> pagesAndMethodsUsedInTest = retrievePageNames.getPagesAndMethods(stepDefinition);
-                List<PageReport> pageReportList = new ArrayList<>();
-                for (Map.Entry<String, List<String>> methodEntry : pagesAndMethodsUsedInTest.entrySet()) {
-                    PageReport pageReport = new PageReport();
-                    pageReport.setPageName(methodEntry.getKey());
-                    Map<String, List<String>> methodFieldMap = pageEngine.getSeleniumFieldsFromEachMethod(Class.forName(methodEntry.getKey()));
-                    List<PageMethodReport> pageMethodReportList = new ArrayList<>();
-                    for (Map.Entry<String, List<String>> methodFieldEntry : methodFieldMap.entrySet()) {
-                        //page method report
-                        PageMethodReport pageMethodReport = new PageMethodReport();
-                        pageMethodReport.setMethodName(methodFieldEntry.getKey());
-                        pageMethodReport.setFields(methodFieldMap.get(methodFieldEntry.getKey()));
-                        pageMethodReportList.add(pageMethodReport);
-                    }
-                    pageReport.setPageMethodReports(pageMethodReportList);
-                    pageReportList.add(pageReport);
-                }
-                stepDef.setPages(pageReportList);
-                stepDefs.add(stepDef);
-            }
-            cucumberReport.setStepDefs(stepDefs);
-            testReports.add(cucumberReport);
-        }
-        return testReports;
+        return CucumberReportFormatter.parse(content);
     }
 }

@@ -11,4 +11,6 @@ public class BaseSeleniumPage {
     @FindBy(css = "#nav-your-amazon")
     protected WebElement baseElement;
 
+    public String name;
+
 }

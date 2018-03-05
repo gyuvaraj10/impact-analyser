@@ -9,11 +9,12 @@ import org.openqa.selenium.chrome.ChromeDriver;
  * Created by Yuvaraj on 02/03/2018.
  */
 public class ANotherStepDef {
+    HomePage page;
 
     @Given("^I have this$")
     public void iHaveThis() throws Throwable {
         WebDriver driver = new ChromeDriver();
-        HomePage page = new HomePage(driver);
+        page = new HomePage(driver);
         page.getOnlineCheckInHeaderText1();
         page.getOnlineCheckInHeaderText();
     }

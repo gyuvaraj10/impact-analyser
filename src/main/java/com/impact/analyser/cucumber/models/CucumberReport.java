@@ -1,6 +1,6 @@
 package com.impact.analyser.cucumber.models;
 
-import com.impact.analyser.report.PageReport;
+import com.impact.analyser.report.PageInfo;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public class CucumberReport {
 
     private String scenarioName;
 
-    private List<PageReport> pages;
+    private List<PageInfo> pages;
 
     private List<String> stepDefinitions;
 
@@ -31,11 +31,11 @@ public class CucumberReport {
         this.scenarioName = scenarioName;
     }
 
-    public List<PageReport> getPages() {
+    public List<PageInfo> getPages() {
         return pages;
     }
 
-    public void setPages(List<PageReport> pages) {
+    public void setPages(List<PageInfo> pages) {
         this.pages = pages;
     }
 }

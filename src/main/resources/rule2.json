@@ -1,0 +1,27 @@
+[
+  {
+    "pageName": "com.sample.elements.pages.DiffPageClass",
+    "methodReportList": [
+      {
+        "methodName": "m1",
+        "fieldAndFieldClassName": {
+          "password": "com.sample.elements.otherclass.ElementsInOtherClass",
+          "loginBtn": "com.sample.elements.otherclass.ElementsInOtherClass"
+        }
+      },
+      {
+        "methodName": "m3",
+        "privateMethods": [
+          "m1",
+          "m2"
+        ]
+      },
+      {
+        "methodName": "m2",
+        "fieldAndFieldClassName": {
+          "userName": "com.sample.elements.otherclass.ElementsInOtherClass"
+        }
+      }
+    ]
+  }
+]

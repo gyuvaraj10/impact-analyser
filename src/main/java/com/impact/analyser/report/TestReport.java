@@ -17,13 +17,13 @@ public class TestReport {
 
     private String testName;
 
-    private List<PageReport> pages;
+    private List<PageInfo> pages;
 
-    public List<PageReport> getPages() {
+    public List<PageInfo> getPages() {
         return pages;
     }
 
-    public void setPages(List<PageReport> pages) {
+    public void setPages(List<PageInfo> pages) {
         this.pages = pages;
     }
 }
