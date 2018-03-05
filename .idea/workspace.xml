@@ -3,24 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="151a4c4d-afe8-43b8-9a19-e7fd0ade19db" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/impactanalyser.iml" afterPath="$PROJECT_DIR$/impactanalyser.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/result.json" afterPath="$PROJECT_DIR$/result.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/impact/analyser/BDDCollector.java" afterPath="$PROJECT_DIR$/src/main/java/com/impact/analyser/BDDCollector.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/impact/analyser/RetrieveJUnitTests.java" afterPath="$PROJECT_DIR$/src/main/java/com/impact/analyser/RetrieveJUnitTests.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/impact/analyser/RetrievePageNames.java" afterPath="$PROJECT_DIR$/src/main/java/com/impact/analyser/RetrievePageNames.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/impact/analyser/cucumber/RetrieveCucumberStepDefinitions.java" afterPath="$PROJECT_DIR$/src/main/java/com/impact/analyser/cucumber/RetrieveCucumberStepDefinitions.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/impact/analyser/report/CucumberTestReport.java" afterPath="$PROJECT_DIR$/src/main/java/com/impact/analyser/report/CucumberTestReport.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/impact/analyser/rules/PageRules.java" afterPath="$PROJECT_DIR$/src/main/java/com/impact/analyser/rules/PageRules.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/sample/tests/AsmTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/sample/tests/AsmTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/sample/tests/BaseSeleniumPage.java" afterPath="$PROJECT_DIR$/src/test/java/com/sample/tests/BaseSeleniumPage.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/sample/tests/BaseTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/sample/tests/BaseTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/sample/tests/HomePage.java" afterPath="$PROJECT_DIR$/src/test/java/com/sample/tests/HomePage.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/sample/tests/LandingPage.java" afterPath="$PROJECT_DIR$/src/test/java/com/sample/tests/LandingPage.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/sample/tests/MyStepdefs.java" afterPath="$PROJECT_DIR$/src/test/java/com/sample/tests/MyStepdefs.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/com/sample/tests/SampleTest.java" afterPath="$PROJECT_DIR$/src/test/java/com/sample/tests/SampleTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/resources/sample.feature" afterPath="$PROJECT_DIR$/src/test/resources/sample.feature" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/resources/sample2.feature" afterPath="$PROJECT_DIR$/src/test/resources/sample2.feature" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java" afterPath="$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java" />
     </list>
     <ignored path="impactanalyser.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -45,17 +28,37 @@
       <file leaf-file-name="AsmTest.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/com/sample/tests/AsmTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="178">
-              <caret line="56" column="72" selection-start-line="56" selection-start-column="72" selection-end-line="56" selection-end-column="72" />
+            <state relative-caret-position="283">
+              <caret line="44" column="27" selection-start-line="44" selection-start-column="27" selection-end-line="44" selection-end-column="27" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BDDCollector.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="TDDCollector.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="324">
+              <caret line="36" column="113" selection-start-line="36" selection-start-column="113" selection-end-line="36" selection-end-column="113" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="RetrievePageNames.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/RetrievePageNames.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="512">
+              <caret line="47" column="49" selection-start-line="47" selection-start-column="49" selection-end-line="47" selection-end-column="49" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BDDCollector.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/BDDCollector.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="123">
+            <state relative-caret-position="243">
               <caret line="87" column="0" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
               <folding />
             </state>
@@ -138,7 +141,6 @@
         <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/info/MethodInfo.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/info/PageInfo.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/report/PageInfo.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/PageEngine.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/sample/tests/BaseTest.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/sample/tests/HomePage.java" />
@@ -155,6 +157,7 @@
         <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/report/CucumberTestReport.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/BDDCollector.java" />
         <option value="$PROJECT_DIR$/src/test/resources/sample2.feature" />
+        <option value="$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java" />
       </list>
     </option>
   </component>
@@ -429,7 +432,7 @@
       <recent name="$PROJECT_DIR$/src/main/java/com/impact/analyser" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.AsmTest.testBDDCollector">
+  <component name="RunManager" selected="JUnit.AsmTest.testTDDCollector">
     <configuration default="false" name="AsmTest.testGet" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
@@ -982,10 +985,10 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="JUnit.AsmTest.testBDDCollector" />
-        <item index="1" class="java.lang.String" itemvalue="TestNG.SampleTest.testMain (1)" />
-        <item index="2" class="java.lang.String" itemvalue="TestNG.SampleTest.testMain" />
-        <item index="3" class="java.lang.String" itemvalue="JUnit.AsmTest.testTDDCollector" />
+        <item index="0" class="java.lang.String" itemvalue="JUnit.AsmTest.testTDDCollector" />
+        <item index="1" class="java.lang.String" itemvalue="JUnit.AsmTest.testBDDCollector" />
+        <item index="2" class="java.lang.String" itemvalue="TestNG.SampleTest.testMain (1)" />
+        <item index="3" class="java.lang.String" itemvalue="TestNG.SampleTest.testMain" />
         <item index="4" class="java.lang.String" itemvalue="JUnit.AsmTest.testGet" />
       </list>
     </recent_temporary>
@@ -1004,15 +1007,6 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="AsmTest_testBDDCollector - 2018.03.05 at 00h 25m 05s.xml">
-      <configuration name="AsmTest.testBDDCollector" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="AsmTest_testBDDCollector - 2018.03.05 at 00h 25m 31s.xml">
-      <configuration name="AsmTest.testBDDCollector" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="AsmTest_testBDDCollector - 2018.03.05 at 00h 27m 51s.xml">
-      <configuration name="AsmTest.testBDDCollector" configurationId="JUnit" />
-    </history-entry>
     <history-entry file="AsmTest_testBDDCollector - 2018.03.05 at 00h 28m 23s.xml">
       <configuration name="AsmTest.testBDDCollector" configurationId="JUnit" />
     </history-entry>
@@ -1033,6 +1027,15 @@
     </history-entry>
     <history-entry file="AsmTest_testBDDCollector - 2018.03.05 at 00h 35m 55s.xml">
       <configuration name="AsmTest.testBDDCollector" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="AsmTest_testBDDCollector - 2018.03.05 at 00h 36m 42s.xml">
+      <configuration name="AsmTest.testBDDCollector" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="AsmTest_testBDDCollector - 2018.03.05 at 00h 37m 46s.xml">
+      <configuration name="AsmTest.testBDDCollector" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="AsmTest_testTDDCollector - 2018.03.05 at 00h 38m 18s.xml">
+      <configuration name="AsmTest.testTDDCollector" configurationId="JUnit" />
     </history-entry>
   </component>
   <component name="ToolWindowManager">
@@ -1061,7 +1064,7 @@
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.40422535" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40422535" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -1084,25 +1087,25 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/test/java/com/sample/tests/AsmTest.java</url>
-          <line>58</line>
-          <properties />
-          <option name="timeStamp" value="68" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/test/java/com/sample/tests/SampleTest.java</url>
           <line>16</line>
           <properties />
           <option name="timeStamp" value="69" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/impact/analyser/BDDCollector.java</url>
-          <line>87</line>
+          <url>file://$PROJECT_DIR$/src/test/java/com/sample/tests/AsmTest.java</url>
+          <line>43</line>
           <properties />
-          <option name="timeStamp" value="88" />
+          <option name="timeStamp" value="106" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java</url>
+          <line>60</line>
+          <properties />
+          <option name="timeStamp" value="107" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="106" />
+      <option name="time" value="108" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1294,13 +1297,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="523">
-          <caret line="55" column="17" selection-start-line="39" selection-start-column="16" selection-end-line="55" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/com/sample/tests/BaseTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
@@ -1415,14 +1411,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/com/sample/tests/AsmTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="178">
-          <caret line="56" column="72" selection-start-line="56" selection-start-column="72" selection-end-line="56" selection-end-column="72" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/report/TestReport.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
@@ -1435,14 +1423,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/RetrievePageNames.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5">
-          <caret line="11" column="53" selection-start-line="11" selection-start-column="53" selection-end-line="11" selection-end-column="53" />
           <folding />
         </state>
       </provider>
@@ -1502,8 +1482,32 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/BDDCollector.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="123">
+        <state relative-caret-position="243">
           <caret line="87" column="0" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/com/sample/tests/AsmTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="283">
+          <caret line="44" column="27" selection-start-line="44" selection-start-column="27" selection-end-line="44" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/RetrievePageNames.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="512">
+          <caret line="47" column="49" selection-start-line="47" selection-start-column="49" selection-end-line="47" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/impact/analyser/TDDCollector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="36" column="113" selection-start-line="36" selection-start-column="113" selection-end-line="36" selection-end-column="113" />
           <folding />
         </state>
       </provider>

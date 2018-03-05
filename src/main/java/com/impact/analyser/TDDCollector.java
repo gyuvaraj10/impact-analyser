@@ -34,7 +34,7 @@ public class TDDCollector {
         for(MethodNode testMethod: tests) {
             TestReport testReport = new TestReport();
             testReport.setTestName(testMethod.name);
-            Map<String, Set<String>> pagesAndMethodsUsedInTest = retrievePageNames.getPagesAndMethods(testMethod);
+            Map<String, Set<String>> pagesAndMethodsUsedInTest = retrievePageNames.getPagesAndMethods(pageRules, testMethod);
             List<PageInfo> pageReportList = new ArrayList<>();
             for (Map.Entry<String, Set<String>> entry : pagesAndMethodsUsedInTest.entrySet()) {
                 Optional<PageInfo> optional = pageInfos.stream().filter(x->x.getPageName().equals(entry.getKey())).findFirst();
