@@ -1,7 +1,7 @@
 Feature: TEst2
 
   Background: Backgroud2
-    Given I have this
+    Given I have this1
 
   Scenario: You naughty2
     Given I have this

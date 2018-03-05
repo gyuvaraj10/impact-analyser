@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class HomePage extends BaseSeleniumPage {
 
+    public String name;
+
     public HomePage(WebDriver driver){
         PageFactory.initElements(driver, this);
     }

@@ -5,13 +5,13 @@ package com.impact.analyser.rules;
  */
 public class PageRules {
 
-    public boolean isStandardDefinition() {
-        return standardDefinition;
+    public String getBasePageClass() {
+        return basePageClass;
     }
 
-    public void setStandardDefinition(boolean standardDefinition) {
-        this.standardDefinition = standardDefinition;
+    public void setBasePageClass(String basePageClass) {
+        this.basePageClass = basePageClass;
     }
 
-    private boolean standardDefinition;
+    private String basePageClass;
 }

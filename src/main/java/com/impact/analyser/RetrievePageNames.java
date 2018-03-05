@@ -1,5 +1,6 @@
 package com.impact.analyser;
 
+import com.impact.analyser.report.CucumberStepDef;
 import com.impact.analyser.rules.PageRules;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.*;
@@ -17,7 +18,7 @@ public class RetrievePageNames {
 
 
     public Map<String, Set<String>> getPagesAndMethods(PageRules pageRules, MethodNode testMethodNode) throws Exception {
-        Map<String, Set<String>> pageNames = getPagesUsedInTest(testMethodNode);
+        Map<String, Set<String>> pageNames = getPagesUsedInTest(pageRules, testMethodNode);
         for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
             if (ain.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode min = (MethodInsnNode) ain;
@@ -77,6 +78,45 @@ public class RetrievePageNames {
 
                 } catch (ClassCastException ex) {
                     System.out.println(ex);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return pageClasses;
+    }
+
+    private Map<String, Set<String>> getPagesUsedInTest(PageRules pageRules, MethodNode testMethodNode) {
+        Class<?> basePageClass = ClassUtils.getClass(pageRules.getBasePageClass());
+        Map<String, Set<String>> pageClasses = new HashMap<>();
+        for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
+            if (ain.getType() == AbstractInsnNode.TYPE_INSN) {
+                TypeInsnNode fin = (TypeInsnNode) ain;
+                try {
+                    Class<?> classFromTestMethod = Class.forName(fin.desc.replace("/", "."));
+                    Class<?> superClass = classFromTestMethod.getSuperclass();
+                    if(superClass!= null) {
+                        if (superClass.isAssignableFrom(basePageClass)) {
+                            pageClasses.put(classFromTestMethod.getName(), new HashSet<>());
+                        }
+                    }
+                } catch (ClassCastException ex) {
+                    System.out.println(ex);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            } else if(ain.getType() == AbstractInsnNode.METHOD_INSN) {
+                MethodInsnNode min = (MethodInsnNode)ain;
+                try {
+                    Class<?> classFromTestMethod = Class.forName(min.owner.replace("/", "."));
+                    Class<?> superClass = classFromTestMethod.getSuperclass();
+                    if(superClass!= null && superClass != Object.class) {
+                        if (superClass.isAssignableFrom(basePageClass)) {
+                            pageClasses.put(classFromTestMethod.getName(), new HashSet<>());
+                        }
+                    }
+                } catch (ClassCastException ex) {
+
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }

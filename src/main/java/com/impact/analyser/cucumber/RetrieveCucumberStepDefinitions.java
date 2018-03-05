@@ -18,33 +18,56 @@ import static org.objectweb.asm.Type.getInternalName;
  */
 public class RetrieveCucumberStepDefinitions {
 
-    public Map<String, MethodNode> getCucumberStepAndDefinitionForAScenario(CucumberResultReport scenario, String[] glues) throws ClassNotFoundException, IOException {
-        Map<String, MethodNode> stepDefs = new HashMap<>();
+    public Map<String, Map<String, MethodNode>> getCucumberStepAndDefinitionForAScenario(CucumberResultReport feature, String[] glues) throws ClassNotFoundException, IOException {
+        Map<String, Map<String, MethodNode>> scenarios = new HashMap<>();
+        List<CucumberElement> elements = feature.getElements();
+        Optional<CucumberElement> backGroundEle = elements.stream().filter(x->x.getType().equals("background")).findFirst();
+        Map<String, MethodNode> backGroundstepDefs = null;
+        if(backGroundEle.isPresent()) {
+            CucumberElement element = backGroundEle.get();
+            backGroundstepDefs = getStepsDefDetails(element, glues);
+        }
+        for(CucumberElement element: feature.getElements()) {
+            if(!element.getType().equals("background")) {
+                Map<String, MethodNode> stepDefs = getStepsDefDetails(element, glues);
+                Map<String, MethodNode> stepDefinitionsIncludingBackGround = new HashMap<>();
+                if(backGroundstepDefs != null) {
+                    stepDefinitionsIncludingBackGround.putAll(backGroundstepDefs);
+                }
+                if(stepDefs != null) {
+                    stepDefinitionsIncludingBackGround.putAll(stepDefs);
+                }
+                scenarios.put(element.getName(), stepDefinitionsIncludingBackGround);
+            }
+        }
+        return scenarios;
+    }
+
+    private Map<String, MethodNode> getStepsDefDetails(CucumberElement element, String[] glues) throws ClassNotFoundException, IOException {
         ClassLoader loader = ClassLoader.getSystemClassLoader();
-        for(CucumberElement element: scenario.getElements()) {
-            for(CucumberStep step: element.getSteps()) {
-                String location = step.getStepMatch().getLocation();
-                if(!location.equals("undefined")) {
-                    String className = location.split("\\.")[0];
-                    String stepMethodName = location.split("\\.")[1];
-                    Class<?> stepDefClass = null;
-                    for (String glue : glues) {
-                        try {
-                            stepDefClass = loader.loadClass(glue + "." + className);
-                            break;
-                        } catch (ClassNotFoundException ex) {
-                        }
+        Map<String, MethodNode> stepDefs = new HashMap<>();
+        for(CucumberStep step: element.getSteps()) {
+            String location = step.getStepMatch().getLocation();
+            if(!location.equals("undefined")) {
+                String className = location.split("\\.")[0];
+                String stepMethodName = location.split("\\.")[1];
+                Class<?> stepDefClass = null;
+                for (String glue : glues) {
+                    try {
+                        stepDefClass = loader.loadClass(glue + "." + className);
+                        break;
+                    } catch (ClassNotFoundException ex) {
                     }
-                    if (stepDefClass == null) {
-                        throw new ClassNotFoundException("Can not locad the class: " + className);
-                    }
-                    ClassReader classR = new ClassReader(getInternalName(stepDefClass));
-                    ClassNode classNode = new ClassNode();
-                    classR.accept(classNode, 0);
-                    for (MethodNode methodNode : classNode.methods) {
-                        if (methodNode.name.equals(stepMethodName.replace("(", "").replace(")", ""))) {
-                            stepDefs.put(step.getName(), methodNode);
-                        }
+                }
+                if (stepDefClass == null) {
+                    throw new ClassNotFoundException("Can not locad the class: " + className);
+                }
+                ClassReader classR = new ClassReader(getInternalName(stepDefClass));
+                ClassNode classNode = new ClassNode();
+                classR.accept(classNode, 0);
+                for (MethodNode methodNode : classNode.methods) {
+                    if (methodNode.name.equals(stepMethodName.split("\\(")[0])) {
+                        stepDefs.put(step.getName(), methodNode);
                     }
                 }
             }

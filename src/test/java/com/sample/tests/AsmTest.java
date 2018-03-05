@@ -36,7 +36,6 @@ public class AsmTest {
     @Test
     public void testTDDCollector()  throws Exception {
         PageRules pageRules = new PageRules();
-        pageRules.setStandardDefinition(true);
         ElementRules elementRules = new ElementRules();
         elementRules.setElementsDefinedWithInPageClassOnly(false);
         elementRules.setElementClassPackages(Arrays.asList("com.sample"));
@@ -48,10 +47,16 @@ public class AsmTest {
 
     @Test
     public void testBDDCollector() throws Exception {
-//        BDDCollector bddCollector = new BDDCollector();
-//        List<CucumberTestReport> cucumberReports = bddCollector.collectReport(new String[]{"com.sample.tests", "com.sample.test2"},
-//                "/Users/Yuvaraj/dev/impactanalyser/src/test/resources");
-//        System.out.println(new Gson().toJson(cucumberReports));
+        PageRules pageRules = new PageRules();
+        pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
+        ElementRules elementRules = new ElementRules();
+        elementRules.setElementsDefinedWithInPageClassOnly(false);
+        elementRules.setElementClassPackages(Arrays.asList("com.sample"));
+        elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
+        BDDCollector bddCollector = new BDDCollector(pageRules, elementRules);
+        List<CucumberTestReport> cucumberReports = bddCollector.collectReport(new String[]{"com.sample.tests", "com.sample.test2"},
+                "/Users/Yuvaraj/dev/impactanalyser/src/test/resources");
+        System.out.println(new Gson().toJson(cucumberReports));
     }
 }
 

@@ -43,5 +43,9 @@ public class LandingPage extends BaseSeleniumPage {
         baseElement.click();
     }
 
+    public static LandingPage getLandingPage() {
+        return new LandingPage(null);
+    }
+
 
 }

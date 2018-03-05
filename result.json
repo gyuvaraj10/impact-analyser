@@ -14,21 +14,27 @@
               "status": "skipped"
             },
             "line": 4,
-            "name": "I have this",
+            "name": "I have this1",
             "match": {
-              "location": "ANotherStepDef.iHaveThis()"
+              "arguments": [
+                {
+                  "val": "1",
+                  "offset": 11
+                }
+              ],
+              "location": "MyStepdefs.iHaveThis(int)"
             },
             "keyword": "Given "
           }
         ]
       },
       {
-        "line": 6,
+        "line": 12,
         "name": "You naughty",
         "description": "",
-        "id": "test;you-naughty",
+        "id": "test;you-naughty;;2",
         "type": "scenario",
-        "keyword": "Scenario",
+        "keyword": "Scenario Outline",
         "steps": [
           {
             "result": {
@@ -64,6 +70,75 @@
             "keyword": "Then "
           }
         ]
+      },
+      {
+        "line": 3,
+        "name": "Backgroud",
+        "description": "",
+        "type": "background",
+        "keyword": "Background",
+        "steps": [
+          {
+            "result": {
+              "status": "skipped"
+            },
+            "line": 4,
+            "name": "I have this1",
+            "match": {
+              "arguments": [
+                {
+                  "val": "1",
+                  "offset": 11
+                }
+              ],
+              "location": "MyStepdefs.iHaveThis(int)"
+            },
+            "keyword": "Given "
+          }
+        ]
+      },
+      {
+        "line": 14,
+        "name": "You naughty one",
+        "description": "",
+        "id": "test;you-naughty-one",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "steps": [
+          {
+            "result": {
+              "status": "skipped"
+            },
+            "line": 15,
+            "name": "I have this",
+            "match": {
+              "location": "ANotherStepDef.iHaveThis()"
+            },
+            "keyword": "Given "
+          },
+          {
+            "result": {
+              "status": "skipped"
+            },
+            "line": 16,
+            "name": "I do this",
+            "match": {
+              "location": "MyStepdefs.iDoThis()"
+            },
+            "keyword": "When "
+          },
+          {
+            "result": {
+              "status": "skipped"
+            },
+            "line": 17,
+            "name": "I should get this",
+            "match": {
+              "location": "MyStepdefs.iShouldGetThis()"
+            },
+            "keyword": "Then "
+          }
+        ]
       }
     ],
     "name": "TEst",
@@ -87,9 +162,15 @@
               "status": "skipped"
             },
             "line": 4,
-            "name": "I have this",
+            "name": "I have this1",
             "match": {
-              "location": "ANotherStepDef.iHaveThis()"
+              "arguments": [
+                {
+                  "val": "1",
+                  "offset": 11
+                }
+              ],
+              "location": "MyStepdefs.iHaveThis(int)"
             },
             "keyword": "Given "
           }

@@ -22,7 +22,7 @@ public class RetrieveJUnitTests {
 
     public List<MethodNode> getJUnitTests(Class<?> testClass) throws Exception {
         List<MethodNode> methodNodeList = new ArrayList<>();
-        if(pageRules.isStandardDefinition()) {
+//        if(pageRules.isStandardDefinition()) {
             ClassReader classR = new ClassReader(getInternalName(testClass));
             ClassNode classNode = new ClassNode();
             classR.accept(classNode, 0);
@@ -39,7 +39,7 @@ public class RetrieveJUnitTests {
                     }
                 }
             }
-        }
+//        }
         return methodNodeList;
     }
 
