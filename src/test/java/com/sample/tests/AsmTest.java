@@ -71,9 +71,10 @@ public class AsmTest {
         elementRules.setElementClassPackages(Arrays.asList("com.sample"));
         elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
         BDDCollector bddCollector = new BDDCollector(pageRules, elementRules);
-        List<CucumberTestReport> cucumberReports = bddCollector.collectReport(new String[]{"com.sample.tests", "com.sample.test2"},
+        List<JsonObject> cucumberReports = bddCollector.collectReport(new String[]{"com.sample.tests", "com.sample.test2"},
                 "/Users/Yuvaraj/dev/impact-analyser/src/test/resources");
-        System.out.println(new Gson().toJson(cucumberReports));
+        FileUtils.writeStringToFile(new File("/Users/Yuvaraj/dev/impact-analyser/src/main/resources/app/bdd.json"),
+                new Gson().toJson(cucumberReports), Charset.defaultCharset());
     }
 }
 

@@ -11,7 +11,7 @@
         app.controller('analyser', function($scope, $http, $q) {
             $scope.testcases =[{}];
             var deferred = $q.defer();
-            $http.get('rule2.json').then(function(response){
+            $http.get('bdd.json').then(function(response){
                 console.log(response.data.length);
                 response.data.forEach(function(d){
                     $scope.testcases.push(d);

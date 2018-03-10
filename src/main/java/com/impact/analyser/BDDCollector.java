@@ -1,14 +1,13 @@
 package com.impact.analyser;
 
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.impact.analyser.cucumber.RetrieveCucumberStepDefinitions;
 import com.impact.analyser.cucumber.models.CucumberElement;
 import com.impact.analyser.cucumber.models.CucumberReportFormatter;
 import com.impact.analyser.cucumber.models.CucumberResultReport;
-import com.impact.analyser.report.CucumberStepDef;
-import com.impact.analyser.report.CucumberTestReport;
-import com.impact.analyser.report.MethodInfo;
-import com.impact.analyser.report.PageInfo;
+import com.impact.analyser.report.*;
 import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
 import cucumber.api.cli.Main;
@@ -37,7 +36,7 @@ public class BDDCollector {
         this.elementRules = elementRules;
     }
 
-    public List<CucumberTestReport> collectReport(String[] glue, String featureFilePath) throws Exception {
+    public List<JsonObject> collectReport(String[] glue, String featureFilePath) throws Exception {
         List<CucumberResultReport> scenarios = getScenarios(glue, featureFilePath);
         List<CucumberTestReport> testReports = new ArrayList<>();
         Map<String, Map<String, MethodNode>> scenarioStepDefDetailMap = new HashMap<>();
@@ -85,7 +84,7 @@ public class BDDCollector {
                 testReports.add(cucumberReport);
             }
         }
-        return testReports;
+        return getJsonObjectsForHtmlReport(testReports);
     }
 
     /**
@@ -115,5 +114,41 @@ public class BDDCollector {
         Main.run(cucumberArgs, loader);
         String content = FileUtils.readFileToString(new File(reportJson), Charset.defaultCharset());
         return CucumberReportFormatter.parse(content);
+    }
+
+    private List<JsonObject> getJsonObjectsForHtmlReport(List<CucumberTestReport> testReports) {
+        List<JsonObject> jsonObjects = new ArrayList<>();
+        for(CucumberTestReport cucumberTestReport: testReports) {
+            String featureFileName = cucumberTestReport.getFeatureFileName();
+            String scenarioName = cucumberTestReport.getScenarioName();
+            for(CucumberStepDef stepDef: cucumberTestReport.getStepDefs()){
+                String testMethodName = stepDef.getName();
+                for(PageInfo pageInfo: stepDef.getPages()) {
+                    String pageName = pageInfo.getPageName();
+                    for(MethodInfo methodInfo: pageInfo.getMethodReportList()) {
+                        String pageMethodName = methodInfo.getMethodName();
+                        for(Map.Entry<String, String> fieldClassEntry: methodInfo.getFieldAndFieldClassName().entrySet()){
+                            JsonObject jsonObject = new JsonObject();
+                            String fieldName = fieldClassEntry.getKey();
+                            String fieldClass = fieldClassEntry.getValue();
+                            jsonObject.addProperty("testClass", featureFileName);
+                            jsonObject.addProperty("testMethod", scenarioName);
+                            jsonObject.addProperty("pageName", pageName);
+                            jsonObject.addProperty("pageMethod", pageMethodName);
+                            jsonObject.addProperty("fieldName", fieldName);
+                            jsonObject.addProperty("fieldClass", fieldClass);
+                            List<String> privateMethods = methodInfo.getPrivateMethods();
+                            if(privateMethods!= null && !privateMethods.isEmpty()) {
+                                String pMethods = new Gson().toJson(privateMethods);
+                                pMethods = pMethods.replace("[\"", "").replace("\"]", "").replace("\",\"","\n");
+                                jsonObject.addProperty("pagePrivateMethods", pMethods);
+                            }
+                            jsonObjects.add(jsonObject);
+                        }
+                    }
+                }
+            }
+        }
+        return jsonObjects;
     }
 }
