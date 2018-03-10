@@ -54,32 +54,7 @@ public class AsmTest {
             elementRules.setElementClassPackages(Arrays.asList("com.sample"));
             elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
             TDDCollector tddCollector = new TDDCollector(pageRules, elementRules);
-            Map<String, List<TestReport>> reports = tddCollector.collectReportForAPackage(new String[]{"com.sample.tests"});
-            List<JsonObject> jsonObjects = new ArrayList<>();
-            for(Map.Entry<String, List<TestReport>> entry: reports.entrySet()) {
-                String testClassName = entry.getKey();
-                for(TestReport testReport: entry.getValue()){
-                    String testMethodName = testReport.getTestName();
-                    for(PageInfo pageInfo: testReport.getPages()) {
-                        String pageName = pageInfo.getPageName();
-                        for(MethodInfo methodInfo: pageInfo.getMethodReportList()) {
-                            String pageMethodName = methodInfo.getMethodName();
-                            for(Map.Entry<String, String> fieldClassEntry: methodInfo.getFieldAndFieldClassName().entrySet()){
-                                JsonObject jsonObject = new JsonObject();
-                                String fieldName = fieldClassEntry.getKey();
-                                String fieldClass = fieldClassEntry.getValue();
-                                jsonObject.addProperty("testClass", testClassName);
-                                jsonObject.addProperty("testMethod", testMethodName);
-                                jsonObject.addProperty("pageName", pageName);
-                                jsonObject.addProperty("pageMethod", pageMethodName);
-                                jsonObject.addProperty("fieldName", fieldName);
-                                jsonObject.addProperty("fieldClass", fieldClass);
-                                jsonObjects.add(jsonObject);
-                            }
-                        }
-                    }
-                }
-            }
+            List<JsonObject> jsonObjects = tddCollector.collectReportForAPackage(new String[]{"com.sample.tests"});
             FileUtils.writeStringToFile(new File("/Users/Yuvaraj/dev/impact-analyser/src/main/resources/app/rule2.json"),
                     new Gson().toJson(jsonObjects), Charset.defaultCharset());
         } catch (Exception ex) {

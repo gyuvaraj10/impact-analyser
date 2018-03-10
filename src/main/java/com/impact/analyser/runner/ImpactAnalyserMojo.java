@@ -1,5 +1,6 @@
 package com.impact.analyser.runner;
 
+import com.google.gson.JsonObject;
 import com.impact.analyser.TDDCollector;
 import com.impact.analyser.report.TestReport;
 import com.impact.analyser.rules.ElementRules;
@@ -54,7 +55,7 @@ public class ImpactAnalyserMojo extends AbstractMojo {
         elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
         TDDCollector tddCollector = new TDDCollector(pageRules, elementRules);
         try {
-            Map<String, List<TestReport>> reports = tddCollector.collectReportForAPackage(new String[]{"com.sample.tests"});
+            List<JsonObject> jsonObjects = tddCollector.collectReportForAPackage(new String[]{"com.sample.tests"});
 
         } catch (IOException e) {
             e.printStackTrace();

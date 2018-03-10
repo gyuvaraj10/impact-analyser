@@ -12,6 +12,7 @@
             $scope.testcases =[{}];
             var deferred = $q.defer();
             $http.get('rule2.json').then(function(response){
+                console.log(response.data.length);
                 response.data.forEach(function(d){
                     $scope.testcases.push(d);
                 });
@@ -29,6 +30,7 @@
             <th scope="col">Test Case Name</th>
             <th scope="col">Page Name</th>
             <th scope="col">Page Methods</th>
+            <th scope="col">Page Private Methods</th>
             <th scope="col">Field Name</th>
             <th scope="col">Field Class</th>
         </thead>
@@ -38,6 +40,7 @@
             <td>{{testcase.testMethod}}</td>
             <td>{{testcase.pageName}}</td>
             <td>{{testcase.pageMethod}}</td>
+            <td>{{testcase.pagePrivateMethods}}</td>
             <td>{{testcase.fieldName}}</td>
             <td>{{testcase.fieldClass}}</td>
         </tr>
