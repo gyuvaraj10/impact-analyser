@@ -17,7 +17,7 @@ import static org.objectweb.asm.Type.getInternalName;
 public class RetrievePageNames {
 
 
-    public Map<String, Set<String>> getPagesAndMethods(PageRules pageRules, MethodNode testMethodNode) throws Exception {
+    public Map<String, Set<String>> getPagesAndMethods(PageRules pageRules, MethodNode testMethodNode) {
         Map<String, Set<String>> pageNames = getPagesUsedInTest(pageRules, testMethodNode);
         for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
             if (ain.getType() == AbstractInsnNode.METHOD_INSN) {

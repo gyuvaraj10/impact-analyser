@@ -8,6 +8,7 @@ import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -29,7 +30,7 @@ public class TDDCollector {
     }
 
 
-    public Map<String, List<TestReport>> collectReportForAPackage(String[] testspackage) throws Exception {
+    public Map<String, List<TestReport>> collectReportForAPackage(String[] testspackage) throws IOException, NoSuchFieldException {
         Map<String, List<TestReport>> testReportmap= new HashMap<>();
         for(String testPackage: testspackage) {
             for(Class<?> testClass: ClassUtils.getAllTypesInPackages(Collections.singletonList(testPackage))) {
@@ -52,7 +53,7 @@ public class TDDCollector {
         }
         return false;
     }
-    private List<TestReport> collectReport(Class<?> testClass)  throws Exception {
+    private List<TestReport> collectReport(Class<?> testClass) throws IOException, NoSuchFieldException {
         List<TestReport> testReports = new ArrayList<>();
         Set<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
         List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules);
