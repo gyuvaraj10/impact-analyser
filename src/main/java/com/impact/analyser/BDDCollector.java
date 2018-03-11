@@ -4,7 +4,6 @@ package com.impact.analyser;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.impact.analyser.cucumber.RetrieveCucumberStepDefinitions;
-import com.impact.analyser.cucumber.models.CucumberElement;
 import com.impact.analyser.cucumber.models.CucumberReportFormatter;
 import com.impact.analyser.cucumber.models.CucumberResultReport;
 import com.impact.analyser.report.*;
@@ -36,7 +35,7 @@ public class BDDCollector {
         this.elementRules = elementRules;
     }
 
-    public List<JsonObject> collectReport(String[] glue, String featureFilePath) throws Exception {
+    public List<JsonObject> collectJsonReport(String[] glue, String featureFilePath) throws Exception {
         List<CucumberResultReport> scenarios = getScenarios(glue, featureFilePath);
         List<CucumberTestReport> testReports = new ArrayList<>();
         Map<String, Map<String, MethodNode>> scenarioStepDefDetailMap = new HashMap<>();
