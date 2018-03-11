@@ -38,28 +38,6 @@ public class RetrievePageNames {
         return pageNames;
     }
 
-
-    public Map<String, Set<String>> getPagesAndMethods(MethodNode testMethodNode) throws Exception {
-        Map<String, Set<String>> pageNames = getPagesUsedInTest(testMethodNode);
-        for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
-            if (ain.getType() == AbstractInsnNode.METHOD_INSN) {
-                MethodInsnNode min = (MethodInsnNode) ain;
-                String methodName = min.name;
-                if(methodName.equals("<init>")) {
-                    continue;
-                }
-                String methodOwner = min.owner.replace("/", ".");
-                Optional<String> optional = pageNames.keySet().stream().filter(x->x.equalsIgnoreCase(methodOwner)).findFirst();
-                if(optional.isPresent()) {
-                    String pageName = optional.get();
-                    Set<String> pageKey = pageNames.get(pageName);
-                    pageKey.add(methodName);
-                }
-            }
-        }
-        return pageNames;
-    }
-
     public Map<String, Set<String>> getPagesUsedInTest(MethodNode testMethodNode) {
         Map<String, Set<String>> pageClasses = new HashMap<>();
         for (AbstractInsnNode ain : testMethodNode.instructions.toArray()) {
@@ -96,7 +74,7 @@ public class RetrievePageNames {
                     Class<?> classFromTestMethod = Class.forName(fin.desc.replace("/", "."));
                     Class<?> superClass = classFromTestMethod.getSuperclass();
                     if(superClass!= null) {
-                        if (superClass.isAssignableFrom(basePageClass)) {
+                        if (superClass.isAssignableFrom(basePageClass)||classFromTestMethod.asSubclass(basePageClass) !=null) {
                             pageClasses.put(classFromTestMethod.getName(), new HashSet<>());
                         }
                     }
@@ -111,7 +89,7 @@ public class RetrievePageNames {
                     Class<?> classFromTestMethod = Class.forName(min.owner.replace("/", "."));
                     Class<?> superClass = classFromTestMethod.getSuperclass();
                     if(superClass!= null && superClass != Object.class) {
-                        if (superClass.isAssignableFrom(basePageClass)) {
+                        if (superClass.isAssignableFrom(basePageClass)||classFromTestMethod.asSubclass(basePageClass) !=null) {
                             pageClasses.put(classFromTestMethod.getName(), new HashSet<>());
                         }
                     }
@@ -145,43 +123,4 @@ public class RetrievePageNames {
         classR.accept(classNode,0);
         return classNode;
     }
-
-
-//    public void test() throws Exception {
-//        ClassReader classR = new ClassReader(getInternalName(SampleTest.class));
-//        ClassNode classNode = new ClassNode();
-//        classR.accept(classNode,0);
-//        List<MethodNode> methodNodeList = classNode.methods;
-//        for(MethodNode methodNode : methodNodeList) {
-//            for (AbstractInsnNode ain : methodNode.instructions.toArray()) {
-////                if (ain.getType() == AbstractInsnNode.FIELD_INSN) {
-////                    FieldInsnNode fin = (FieldInsnNode) ain;
-////                    if (HomePage.class.getDeclaredField(fin.name).getType().isAssignableFrom(WebElement.class)) {
-////                        System.out.println("Field Node");
-////                        System.out.println(fin.name);
-////                    }
-//////                    System.out.println("Field Node");
-////                    System.out.println(fin.name);
-////
-////                }
-//                if (ain.getType() == AbstractInsnNode.TYPE_INSN) {
-//                    TypeInsnNode fin = (TypeInsnNode) ain;
-//                    try {
-//                        System.out.println("Type node");
-//                        System.out.println(fin.desc);
-//                        System.out.println(Class.forName(fin.desc.replace("/", ".")));
-//                    } catch (ClassCastException ex) {
-//                        System.out.println(ex);
-//                    }
-//                }
-////                if (ain.getType() == AbstractInsnNode.METHOD_INSN) {
-////                    MethodInsnNode min = (MethodInsnNode) ain;
-////                    System.out.println("Method Node");
-////                    System.out.println(min.name);
-////                    System.out.println(min.owner);
-////                }
-//
-//            }
-//        }
-//    }
 }

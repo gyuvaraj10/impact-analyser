@@ -24,7 +24,7 @@
             $scope.cachetests = [];
             $scope.pageNames = [];
             var deferred = $q.defer();
-            $http.get('bdd.json').then(function(response){
+            $http.get('report.json').then(function(response){
                 response.data.forEach(function(d){
                     if($scope.pageNames.indexOf(d.pageName) == -1){
                         $scope.pageNames.push(d.pageName);

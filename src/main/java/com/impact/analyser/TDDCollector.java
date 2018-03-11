@@ -8,10 +8,16 @@ import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.report.TestReport;
 import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.wagon.PathUtils;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -31,8 +37,11 @@ public class TDDCollector {
         jUnitTests = new RetrieveJUnitTests(pageRules);
     }
 
+    public  List<JsonObject> collectJsonReport(String[] testspackage) throws IOException, NoSuchFieldException {
+        return getJsonObjectsForHtmlReport(collectReport(testspackage));
+    }
 
-    public List<JsonObject> collectReportForAPackage(String[] testspackage) throws IOException, NoSuchFieldException {
+    public Map<String, List<TestReport>> collectReport(String[] testspackage) throws IOException, NoSuchFieldException {
         Map<String, List<TestReport>> testReportmap= new HashMap<>();
         for(String testPackage: testspackage) {
             for(Class<?> testClass: ClassUtils.getAllTypesInPackages(Collections.singletonList(testPackage))) {
@@ -41,7 +50,7 @@ public class TDDCollector {
                 }
             }
         }
-        return getJsonObjectsForHtmlReport(testReportmap);
+        return testReportmap;
     }
 
     private List<JsonObject> getJsonObjectsForHtmlReport(Map<String, List<TestReport>> reports) {

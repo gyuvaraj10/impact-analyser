@@ -11,11 +11,11 @@ import java.util.List;
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
-public class LandingPage extends BaseSeleniumPage {
+public class LandingPage extends HomePage {
 
 
     public LandingPage(WebDriver driver){
-        PageFactory.initElements(driver, this);
+        super(driver);
     }
 
     @FindBy(css = "#nav-your-amazon")
