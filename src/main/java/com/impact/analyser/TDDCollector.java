@@ -1,6 +1,8 @@
 package com.impact.analyser;
 
 //import com.impact.analyser.report.PageMethodFieldReport;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.impact.analyser.report.MethodInfo;
 import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.report.TestReport;
@@ -8,6 +10,7 @@ import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -29,7 +32,7 @@ public class TDDCollector {
     }
 
 
-    public Map<String, List<TestReport>> collectReportForAPackage(String[] testspackage) throws Exception {
+    public List<JsonObject> collectReportForAPackage(String[] testspackage) throws IOException, NoSuchFieldException {
         Map<String, List<TestReport>> testReportmap= new HashMap<>();
         for(String testPackage: testspackage) {
             for(Class<?> testClass: ClassUtils.getAllTypesInPackages(Collections.singletonList(testPackage))) {
@@ -38,9 +41,43 @@ public class TDDCollector {
                 }
             }
         }
-        return testReportmap;
+        return getJsonObjectsForHtmlReport(testReportmap);
     }
 
+    private List<JsonObject> getJsonObjectsForHtmlReport(Map<String, List<TestReport>> reports) {
+        List<JsonObject> jsonObjects = new ArrayList<>();
+        for(Map.Entry<String, List<TestReport>> entry: reports.entrySet()) {
+            String testClassName = entry.getKey();
+            for(TestReport testReport: entry.getValue()){
+                String testMethodName = testReport.getTestName();
+                for(PageInfo pageInfo: testReport.getPages()) {
+                    String pageName = pageInfo.getPageName();
+                    for(MethodInfo methodInfo: pageInfo.getMethodReportList()) {
+                        String pageMethodName = methodInfo.getMethodName();
+                        for(Map.Entry<String, String> fieldClassEntry: methodInfo.getFieldAndFieldClassName().entrySet()){
+                            JsonObject jsonObject = new JsonObject();
+                            String fieldName = fieldClassEntry.getKey();
+                            String fieldClass = fieldClassEntry.getValue();
+                            jsonObject.addProperty("testClass", testClassName);
+                            jsonObject.addProperty("testMethod", testMethodName);
+                            jsonObject.addProperty("pageName", pageName);
+                            jsonObject.addProperty("pageMethod", pageMethodName);
+                            jsonObject.addProperty("fieldName", fieldName);
+                            jsonObject.addProperty("fieldClass", fieldClass);
+                            List<String> privateMethods = methodInfo.getPrivateMethods();
+                            if(privateMethods!= null && !privateMethods.isEmpty()) {
+                                String pMethods = new Gson().toJson(privateMethods);
+                                pMethods = pMethods.replace("[\"", "").replace("\"]", "").replace("\",\"","\n");
+                                jsonObject.addProperty("pagePrivateMethods", pMethods);
+                            }
+                            jsonObjects.add(jsonObject);
+                        }
+                    }
+                }
+            }
+        }
+        return jsonObjects;
+    }
     private boolean isTestClass(Class<?> testClass) {
         Annotation jUnitANno = testClass.getDeclaredAnnotation(org.junit.Test.class);
         Annotation testNGAnno = testClass.getDeclaredAnnotation(org.testng.annotations.Test.class);
@@ -52,7 +89,7 @@ public class TDDCollector {
         }
         return false;
     }
-    private List<TestReport> collectReport(Class<?> testClass)  throws Exception {
+    private List<TestReport> collectReport(Class<?> testClass) throws IOException, NoSuchFieldException {
         List<TestReport> testReports = new ArrayList<>();
         Set<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
         List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules);

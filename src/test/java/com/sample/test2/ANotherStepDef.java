@@ -1,6 +1,7 @@
 package com.sample.test2;
 
 import com.sample.tests.HomePage;
+import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -18,4 +19,11 @@ public class ANotherStepDef {
         page.getOnlineCheckInHeaderText1();
         page.getOnlineCheckInHeaderText();
     }
+
+    @Given("^I Test \"([^\"]*)\" SKiped$")
+    public void i_Test_SKiped(String arg1) throws Throwable {
+        System.out.println(arg1);
+    }
+
+
 }

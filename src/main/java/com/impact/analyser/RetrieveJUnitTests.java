@@ -5,6 +5,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.objectweb.asm.Type.getInternalName;
@@ -43,7 +44,7 @@ public class RetrieveJUnitTests {
         return methodNodeList;
     }
 
-    public Set<MethodNode> getTestNGTests(Class<?> testClass) throws Exception {
+    public Set<MethodNode> getTestNGTests(Class<?> testClass) throws IOException {
         ClassReader classR = new ClassReader(getInternalName(testClass));
         ClassNode classNode = new ClassNode();
         classR.accept(classNode,0);
