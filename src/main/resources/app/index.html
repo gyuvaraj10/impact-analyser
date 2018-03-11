@@ -13,6 +13,9 @@
             font-weight:100;
             font-size:13;
         }
+        .report {
+            color: red;
+        }
     </style>
     <script>
         var app = angular.module('impact', []);
@@ -59,7 +62,7 @@
     </div>
     <div class="alert alert-success" role="alert">
         Your impact Analysis summary.
-        <span ng-hide = "pagep==='Choose Page To Get Report'">Total Tests Impacted by {{pagep}} are: {{testCount}}</span>
+        <span ng-hide = "pagep==='Choose Page To Get Report'" class="report">Total Tests Impacted by {{pagep}} are: {{testCount}}</span>
     </div>
     <div class="input-group" style="width:40%">
         <select class="custom-select" ng-init="pagep ='Choose Page To Get Report'" ng-model="pagep" id="inputGroupSelect04" ng-change="loadPage(pagep)">
@@ -67,7 +70,7 @@
             <option value="{{page}}" data-ng-repeat="page in pageNames" >{{page}}</option>
         </select>
     </div>
-
+    <br>
     <table class="table table-bordered table-hover" align="center">
         <thead class="thead-dark">
             <tr>
