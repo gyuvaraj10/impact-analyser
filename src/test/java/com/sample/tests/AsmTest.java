@@ -56,7 +56,7 @@ public class AsmTest {
         PageRules pageRules = new PageRules();
         pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
         ElementRules elementRules = new ElementRules();
-        elementRules.setElementsDefinedWithInPageClassOnly(false);
+        elementRules.setElementsDefinedWithInPageClassOnly(true);
         elementRules.setElementClassPackages(Arrays.asList("com.sample"));
         elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
         BDDCollector bddCollector = new BDDCollector(pageRules, elementRules);
@@ -64,6 +64,7 @@ public class AsmTest {
                 "/Users/Yuvaraj/dev/impact-analyser/src/test/resources");
         FileUtils.writeStringToFile(new File("/Users/Yuvaraj/dev/impact-analyser/src/main/resources/app/bdd.json"),
                 new Gson().toJson(cucumberReports), Charset.defaultCharset());
+        System.out.println(new Gson().toJson(cucumberReports));
     }
 }
 

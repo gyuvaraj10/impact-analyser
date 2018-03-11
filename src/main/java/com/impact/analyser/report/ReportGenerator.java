@@ -16,7 +16,7 @@ import java.util.List;
 public class ReportGenerator {
 
     public void generateReport(List<JsonObject> jsonObjects) throws IOException {
-        String indexHtmlPath = this.getClass().getResource("app/index.html").getPath();
+        String indexHtmlPath = this.getClass().getResource("/app/index.html").getPath();
         String jsonReport = new Gson().toJson(jsonObjects);
         String baseDirPath = System.getProperty("usr.dir");
         File impactAnalysisDir = Paths.get(baseDirPath,"impact").toFile();

@@ -97,11 +97,14 @@ public class BDDCollector {
         String reportJson = "result.json";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         String[] cucumberArgs = new String[7+glues.length];
+        List<String> args = new ArrayList<>();
         int start = 0;
         for(String glue: glues) {
             cucumberArgs[start] = "-g";
+            args.add("-g");
             int nextIndex = start+1;
             cucumberArgs[nextIndex] = glue;
+            args.add(glue);
             start = nextIndex+1;
         }
         cucumberArgs[start++] = "-p";
@@ -109,8 +112,12 @@ public class BDDCollector {
         cucumberArgs[start++] = "-m";
         cucumberArgs[start++] = "-d";
         cucumberArgs[start] = featureFilePath;
-
-        Main.run(cucumberArgs, loader);
+        args.add("-p");
+        args.add("json:"+ reportJson);
+        args.add("-m");
+        args.add("-d");
+        args.add(featureFilePath);
+        Main.run(args.toArray(new String[]{}), loader);
         String content = FileUtils.readFileToString(new File(reportJson), Charset.defaultCharset());
         return CucumberReportFormatter.parse(content);
     }
