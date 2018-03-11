@@ -45,7 +45,7 @@ public class AsmTest {
     }
 
     @Test
-    public void testTDDCollector()   {
+    public void testTDDCollector() {
         try {
             PageRules pageRules = new PageRules();
             pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
