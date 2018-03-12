@@ -40,7 +40,7 @@ public class BDDCollector {
         List<CucumberTestReport> testReports = new ArrayList<>();
         Map<String, Map<String, MethodNode>> scenarioStepDefDetailMap = new HashMap<>();
         Iterator<CucumberResultReport> iterator = scenarios.iterator();
-        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules);
+        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
         while(iterator.hasNext()) {
             CucumberResultReport feature = iterator.next();
             scenarioStepDefDetailMap = cucumberStepDefinitions.getCucumberStepAndDefinitionForAScenario(feature, glue);

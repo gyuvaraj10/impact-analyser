@@ -23,24 +23,22 @@ public class RetrieveJUnitTests {
 
     public List<MethodNode> getJUnitTests(Class<?> testClass) throws Exception {
         List<MethodNode> methodNodeList = new ArrayList<>();
-//        if(pageRules.isStandardDefinition()) {
-            ClassReader classR = new ClassReader(getInternalName(testClass));
-            ClassNode classNode = new ClassNode();
-            classR.accept(classNode, 0);
-            RetrievePageNames retrievePageNames = new RetrievePageNames();
-            for (MethodNode methodNode : classNode.methods) {
-                if (methodNode.visibleAnnotations != null && methodNode.visibleAnnotations.size() > 0) {
-                    Optional opt = methodNode.visibleAnnotations.stream()
-                            .filter(x -> retrievePageNames.getClass(x.desc.replace("/", ".")
-                                    .replace(";", "").replace("L", ""))
-                                    .isAssignableFrom(org.junit.Test.class))
-                            .findFirst();
-                    if (opt != null && opt.isPresent()) {
-                        methodNodeList.add(methodNode);
-                    }
+        ClassReader classR = new ClassReader(getInternalName(testClass));
+        ClassNode classNode = new ClassNode();
+        classR.accept(classNode, 0);
+        RetrievePageNames retrievePageNames = new RetrievePageNames();
+        for (MethodNode methodNode : classNode.methods) {
+            if (methodNode.visibleAnnotations != null && methodNode.visibleAnnotations.size() > 0) {
+                Optional opt = methodNode.visibleAnnotations.stream()
+                        .filter(x -> retrievePageNames.getClass(x.desc.replace("/", ".")
+                                .replace(";", "").replace("L", ""))
+                                .isAssignableFrom(org.junit.Test.class))
+                        .findFirst();
+                if (opt != null && opt.isPresent()) {
+                    methodNodeList.add(methodNode);
                 }
             }
-//        }
+        }
         return methodNodeList;
     }
 
@@ -55,7 +53,7 @@ public class RetrieveJUnitTests {
                 Optional opt = methodNode.visibleAnnotations.stream()
                         .filter(x -> retrievePageNames.getClass(x.desc.replace("/", ".")
                                 .replace(";", "").replace("L", ""))
-                                .isAssignableFrom(org.testng.annotations.Test.class))
+                                .isAssignableFrom(ClassUtils.getClass("org.testng.annotations.Test")))
                         .findFirst();
                 if (opt != null && opt.isPresent()) {
                     methodNodeList.add(methodNode);
