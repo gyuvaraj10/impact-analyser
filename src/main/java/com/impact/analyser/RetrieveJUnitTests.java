@@ -26,13 +26,12 @@ public class RetrieveJUnitTests {
         ClassReader classR = new ClassReader(getInternalName(testClass));
         ClassNode classNode = new ClassNode();
         classR.accept(classNode, 0);
-        RetrievePageNames retrievePageNames = new RetrievePageNames();
         for (MethodNode methodNode : classNode.methods) {
             if (methodNode.visibleAnnotations != null && methodNode.visibleAnnotations.size() > 0) {
                 Optional opt = methodNode.visibleAnnotations.stream()
-                        .filter(x -> retrievePageNames.getClass(x.desc.replace("/", ".")
+                        .filter(x -> ClassUtils.getClass(x.desc.replace("/", ".")
                                 .replace(";", "").replace("L", ""))
-                                .isAssignableFrom(org.junit.Test.class))
+                                .isAssignableFrom(ClassUtils.getClass("org.junit.Test")))
                         .findFirst();
                 if (opt != null && opt.isPresent()) {
                     methodNodeList.add(methodNode);
@@ -46,12 +45,11 @@ public class RetrieveJUnitTests {
         ClassReader classR = new ClassReader(getInternalName(testClass));
         ClassNode classNode = new ClassNode();
         classR.accept(classNode,0);
-        RetrievePageNames retrievePageNames = new RetrievePageNames();
         Set<MethodNode> methodNodeList = new HashSet<>();
         for(MethodNode methodNode: classNode.methods) {
             if (methodNode.visibleAnnotations != null && methodNode.visibleAnnotations.size() > 0) {
                 Optional opt = methodNode.visibleAnnotations.stream()
-                        .filter(x -> retrievePageNames.getClass(x.desc.replace("/", ".")
+                        .filter(x -> ClassUtils.getClass(x.desc.replace("/", ".")
                                 .replace(";", "").replace("L", ""))
                                 .isAssignableFrom(ClassUtils.getClass("org.testng.annotations.Test")))
                         .findFirst();

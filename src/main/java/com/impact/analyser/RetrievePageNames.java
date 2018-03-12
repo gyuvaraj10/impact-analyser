@@ -45,9 +45,9 @@ public class RetrievePageNames {
                 TypeInsnNode fin = (TypeInsnNode) ain;
                 try {
                     Class<?> classFromTestMethod = Class.forName(fin.desc.replace("/", "."));
-                    ClassNode classNodeFromTestMethod = getClassNode(classFromTestMethod);
+                    ClassNode classNodeFromTestMethod = ClassUtils.getClassNode(classFromTestMethod);
                     List<FieldNode> fieldNodes = classNodeFromTestMethod.fields;
-                    Optional optional = fieldNodes.stream().filter(x->getClass(x.desc
+                    Optional optional = fieldNodes.stream().filter(x->ClassUtils.getClass(x.desc
                             .replace("/",".").replace("L","").replace(";",""))
                             .isAssignableFrom(WebElement.class)).findFirst();
                     if(optional.isPresent()) {
@@ -79,9 +79,7 @@ public class RetrievePageNames {
                         }
                     }
                 } catch (ClassCastException ex) {
-                    System.out.println(ex);
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
                 }
             } else if(ain.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode min = (MethodInsnNode)ain;
@@ -101,26 +99,5 @@ public class RetrievePageNames {
             }
         }
         return pageClasses;
-    }
-
-    public Class<?> getClass(String fullyClass) {
-        try {
-            return Class.forName(fullyClass);
-        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-        }
-        return Class.class;
-    }
-
-    public ClassNode getClassNode(Class<?> classClass) {
-        ClassReader classR = null;
-        try {
-            classR = new ClassReader(getInternalName(classClass));
-        } catch (IOException e) {
-//            e.printStackTrace();
-        }
-        ClassNode classNode = new ClassNode();
-        classR.accept(classNode,0);
-        return classNode;
     }
 }
