@@ -37,14 +37,14 @@ public class TDDCollector {
         jUnitTests = new RetrieveJUnitTests(pageRules);
     }
 
-    public  List<JsonObject> collectJsonReport(String[] testspackage) throws IOException, NoSuchFieldException {
+    public  List<JsonObject> collectJsonReport(String[] testspackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
         return getJsonObjectsForHtmlReport(collectReport(testspackage));
     }
 
-    public Map<String, List<TestReport>> collectReport(String[] testspackage) throws IOException, NoSuchFieldException {
+    public Map<String, List<TestReport>> collectReport(String[] testspackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
         Map<String, List<TestReport>> testReportmap= new HashMap<>();
         for(String testPackage: testspackage) {
-            for(Class<?> testClass: ClassUtils.getAllTypesInPackages(Collections.singletonList(testPackage))) {
+            for(Class<?> testClass: ClassUtils.getAllTestTypesInPackages(Collections.singletonList(testPackage))) {
                 if(isTestClass(testClass)) {
                     testReportmap.put(testClass.getName(), collectReport(testClass));
                 }
@@ -88,20 +88,31 @@ public class TDDCollector {
         return jsonObjects;
     }
     private boolean isTestClass(Class<?> testClass) {
-        Annotation jUnitANno = testClass.getDeclaredAnnotation(org.junit.Test.class);
-        Annotation testNGAnno = testClass.getDeclaredAnnotation(org.testng.annotations.Test.class);
-        boolean testMethodExists = Arrays.stream(testClass.getDeclaredMethods())
-                .anyMatch(x->(x.getDeclaredAnnotation(org.junit.Test.class)!=null)||
-                        (x.getDeclaredAnnotation(org.testng.annotations.Test.class)!=null));
-        if(jUnitANno != null || testNGAnno != null ||testMethodExists) {
+        Class<? extends Annotation> jUnitAnno = ClassUtils.getAnnotationClass("org.junit.Test");
+        Class<? extends Annotation> testNGAnnot = ClassUtils.getAnnotationClass("org.testng.annotations.Test");
+        Annotation jUnitANno = null, testNGAnno = null;
+        boolean jUnitTestMethodExists = false;
+        boolean testNGTestMethodExists = false;
+        if(jUnitAnno != null) {
+            jUnitANno = testClass.getDeclaredAnnotation(jUnitAnno);
+            jUnitTestMethodExists = Arrays.stream(testClass.getDeclaredMethods())
+                    .anyMatch(x->(x.getDeclaredAnnotation(jUnitAnno)!=null));
+        }
+        if(testNGAnnot != null) {
+            testNGAnno = testClass.getDeclaredAnnotation(testNGAnnot);
+            testNGTestMethodExists = Arrays.stream(testClass.getDeclaredMethods())
+                    .anyMatch(x->(x.getDeclaredAnnotation(testNGAnnot)!=null));
+        }
+
+        if(jUnitANno != null || testNGAnno != null ||jUnitTestMethodExists|| testNGTestMethodExists) {
             return true;
         }
         return false;
     }
-    private List<TestReport> collectReport(Class<?> testClass) throws IOException, NoSuchFieldException {
+    private List<TestReport> collectReport(Class<?> testClass) throws IOException, NoSuchFieldException, ClassNotFoundException {
         List<TestReport> testReports = new ArrayList<>();
         Set<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
-        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules);
+        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
         for(MethodNode testMethod: tests) {
             TestReport testReport = new TestReport();
             testReport.setTestName(testMethod.name);

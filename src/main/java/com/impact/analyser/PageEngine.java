@@ -3,6 +3,7 @@ package com.impact.analyser;
 import com.impact.analyser.report.MethodInfo;
 import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.rules.ElementRules;
+import com.impact.analyser.rules.PageRules;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.tree.*;
 import org.openqa.selenium.By;
@@ -21,15 +22,15 @@ import java.util.stream.Collectors;
  */
 public class PageEngine {
 
-    public List<PageInfo> getSeleniumFieldsFromPageMethod(ElementRules elementRules) throws NoSuchFieldException {
+    public List<PageInfo> getSeleniumFieldsFromPageMethod(ElementRules elementRules, PageRules pageRules) throws NoSuchFieldException, ClassNotFoundException {
         List<PageInfo> pageReports = new ArrayList<>();
         if (elementRules.isElementsDefinedWithInPageClassOnly()) {
-            Set<Class<?>> allPageClasses = ClassUtils.getAllTypesInPackages(elementRules.getPageClassPackages());
+            Set<Class<?>> allPageClasses = ClassUtils.getAllPageTypesInPackages(elementRules.getPageClassPackages(), pageRules.getBasePageClass());
             pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), null, allPageClasses));
         } else {
-            Set<Class<?>> allElementClasses = ClassUtils.getAllTypesInPackages(elementRules.getElementClassPackages());
+            Set<Class<?>> allElementClasses = ClassUtils.getAllPageTypesInPackages(elementRules.getElementClassPackages(), pageRules.getBasePageClass());
             Map<String, List<String>> classAndFields = getSeleniumFieldsFromClasses(allElementClasses);
-            Set<Class<?>> allPageClasses = ClassUtils.getAllTypesInPackages(elementRules.getPageClassPackages());
+            Set<Class<?>> allPageClasses = ClassUtils.getAllPageTypesInPackages(elementRules.getPageClassPackages(), pageRules.getBasePageClass());
             pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), classAndFields, allPageClasses));
         }
         return pageReports;
@@ -107,9 +108,11 @@ public class PageEngine {
                         fieldAdd = true;
                     }
                     for(MethodInfo mR: methodReports) {
-                        if(privateMethods.contains(mR.getMethodName())){
-                            privateMethodAdd = true;
-                            break;
+                        if(!mR.equals("<init>")) {
+                            if (privateMethods.contains(mR.getMethodName())) {
+                                privateMethodAdd = true;
+                                break;
+                            }
                         }
                     }
                     if(fieldAdd|| privateMethodAdd) {
@@ -219,7 +222,7 @@ public class PageEngine {
      * @return
      */
     private boolean isSeleniumField(Field field) {
-        if(field.getType().isAssignableFrom(WebElement.class)) {
+        if(field.getType().isAssignableFrom(ClassUtils.getClass("org.openqa.selenium.WebElement"))) {
             return true;
         } else if(field.getType().isAssignableFrom(List.class)) {
             List<Annotation> annotations = Arrays.asList(field.getDeclaredAnnotations());

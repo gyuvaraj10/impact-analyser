@@ -3,18 +3,16 @@ package com.impact.analyser;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Type.getInternalName;
@@ -34,13 +32,50 @@ public class ClassUtils {
                 .map(ClassUtils::getClass).collect(Collectors.toSet());
     }
 
+    public static Set<Class<?>> getAllPageTypesInPackages(List<String> packages, String basePageClassName) throws ClassNotFoundException {
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setScanners(new SubTypesScanner(true))
+                .forPackages(packages.toArray(new String[]{})));
+        Class basePageClass = ClassLoader.getSystemClassLoader().loadClass(basePageClassName);
+        Set<Class<?>> allClasses = reflections.getSubTypesOf(basePageClass);
+        return allClasses.stream().filter(x->packages.stream().anyMatch(x.getName()::startsWith))
+                .collect(Collectors.toSet());
+    }
+
+    public static Set<Class<?>> getAllTestTypesInPackages(List<String> packages) {
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setScanners(new MethodAnnotationsScanner())
+                .forPackages(packages.toArray(new String[]{})));
+        Class<? extends Annotation> jUnitAnno = getAnnotationClass("org.junit.Test");
+        Class<? extends Annotation> testNGAnno = getAnnotationClass("org.testng.annotations.Test");
+        Set<Method> allMethods = new HashSet<>();
+        if(jUnitAnno != null) {
+            allMethods.addAll(reflections.getMethodsAnnotatedWith(jUnitAnno));
+        }
+        if(testNGAnno != null) {
+            allMethods.addAll(reflections.getMethodsAnnotatedWith(testNGAnno));
+        }
+        Set<Class<?>> testClasses = new HashSet<>();
+        for(Method m: allMethods) {
+            testClasses.add(m.getDeclaringClass());
+        }
+        return testClasses.stream().filter(x->packages.stream().anyMatch(x.getName()::startsWith)).collect(Collectors.toSet());
+    }
+
     public static Class<?> getClass(String fullyClass) {
         try {
             return Class.forName(fullyClass);
         } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
+            return null;
         }
-        return Class.class;
+    }
+
+    public static Class<? extends Annotation> getAnnotationClass(String fullyClass) {
+        try {
+            return (Class<? extends Annotation>) Class.forName(fullyClass);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
     }
 
     public static ClassNode getClassNode(Class<?> classClass) {
@@ -48,7 +83,7 @@ public class ClassUtils {
         try {
             classR = new ClassReader(getInternalName(classClass));
         } catch (IOException e) {
-//            e.printStackTrace();
+            return null;
         }
         ClassNode classNode = new ClassNode();
         classR.accept(classNode,0);
