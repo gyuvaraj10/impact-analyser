@@ -78,7 +78,7 @@ _Following the steps to calculate the impact_
      TDDCollector tddCollector = new TDDCollector(pageRules, elementRules);
      List<JsonObject> jsonObjects = tddCollector.collectJsonReport(new String[]{"com.sample.tests"});
      ReportGenerator reportGenerator = new ReportGenerator();
-          reportGenerator.generateReport(cucumberReports);
+          reportGenerator.generateReport(jsonObjects);
   }
  ```
  1. Once the test execution is successful, you will see a folder named 'impact' in your project directory in which you will find index.html, report.json files
