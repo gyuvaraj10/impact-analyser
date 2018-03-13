@@ -40,7 +40,8 @@ public class AsmTest {
             PageRules pageRules = new PageRules();
             pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
             ElementRules elementRules = new ElementRules();
-            elementRules.setElementsDefinedWithInPageClassOnly(false);
+            elementRules.setElementsDefinedWithInPageMethodAlso(true);
+            elementRules.setElementsDefinedWithInPageClassOnly(true);
             elementRules.setElementClassPackages(Arrays.asList("com.sample"));
             elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
             TDDCollector tddCollector = new TDDCollector(pageRules, elementRules);

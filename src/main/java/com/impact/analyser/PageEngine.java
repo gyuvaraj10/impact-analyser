@@ -20,12 +20,12 @@ public class PageEngine {
         List<PageInfo> pageReports = new ArrayList<>();
         if (elementRules.isElementsDefinedWithInPageClassOnly()) {
             Set<Class<?>> allPageClasses = ClassUtils.getAllPageTypesInPackages(elementRules.getPageClassPackages(), pageRules.getBasePageClass());
-            pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), null, allPageClasses));
+            pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), null, allPageClasses, elementRules));
         } else {
             Set<Class<?>> allElementClasses = ClassUtils.getAllPageTypesInPackages(elementRules.getElementClassPackages(), pageRules.getBasePageClass());
             Map<String, List<String>> classAndFields = getSeleniumFieldsFromClasses(allElementClasses);
             Set<Class<?>> allPageClasses = ClassUtils.getAllPageTypesInPackages(elementRules.getPageClassPackages(), pageRules.getBasePageClass());
-            pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), classAndFields, allPageClasses));
+            pageReports.addAll(getSeleniumFields(elementRules.isElementsDefinedWithInPageClassOnly(), classAndFields, allPageClasses, elementRules));
         }
         return pageReports;
     }
@@ -40,16 +40,16 @@ public class PageEngine {
      */
     private List<PageInfo> getSeleniumFields(boolean elementsInPageClass,
                                              Map<String, List<String>> classAndFields,
-                                             Set<Class<?>> allPageClasses) throws NoSuchFieldException {
+                                             Set<Class<?>> allPageClasses, ElementRules elementRules) throws NoSuchFieldException {
         if(elementsInPageClass) {
-            return getPageReportsForElementsWithInPageClassesOnly(allPageClasses);
+            return getPageReportsForElementsWithInPageClassesOnly(allPageClasses, elementRules);
         } else {
-            return getPageReportsForElementsInDifferentClass(classAndFields, allPageClasses);
+            return getPageReportsForElementsInDifferentClass(classAndFields, allPageClasses, elementRules);
         }
     }
 
     private List<PageInfo> getPageReportsForElementsInDifferentClass(Map<String, List<String>> classAndFields,
-                                                                     Set<Class<?>> allPageClasses) {
+                                     Set<Class<?>> allPageClasses, ElementRules elementRules) {
         List<PageInfo> pageReports = new ArrayList<>();
         for(Class<?> pageClass: allPageClasses) {
             PageInfo pageReport = new PageInfo();
@@ -65,6 +65,15 @@ public class PageEngine {
                     Map<String, String> fieldAndFieldClassName = new HashMap<>();
                     List<String> privateMethods = new ArrayList<>();
                     for(AbstractInsnNode abstractInsnNode: methodNode.instructions.toArray()) {
+                        if(elementRules.isElementsDefinedWithInPageMethodAlso()) {
+                            for (LocalVariableNode localVariableNode : methodNode.localVariables) {
+                                String fieldName = localVariableNode.name;
+                                if(!fieldName.equals("this") && localVariableNode.desc.startsWith("L")) {
+                                    isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1));
+                                    fieldAndFieldClassName.put(fieldName, pageClass.getName());
+                                }
+                            }
+                        }
                         if (abstractInsnNode.getType() == AbstractInsnNode.FIELD_INSN) {
                             FieldInsnNode fin = (FieldInsnNode) abstractInsnNode;
                             String className = fin.owner.replace("/",".");
@@ -82,6 +91,13 @@ public class PageEngine {
                                     field = ClassUtils.getClassField(page.getSuperclass(), fin.name);
                                 }
                                 if (field != null && isSeleniumField(field)) {
+                                    fieldAndFieldClassName.put(fin.name, className);
+                                }
+                            }
+                            if(elementRules.isElementsDefinedWithInPageMethodAlso()) {
+                                Class<?> ownerClass = ClassUtils.getClass(className);
+                                Field methodField = ClassUtils.getClassField(ownerClass, fin.name);
+                                if(methodField!= null && isSeleniumField(methodField)) {
                                     fieldAndFieldClassName.put(fin.name, className);
                                 }
                             }
@@ -125,7 +141,8 @@ public class PageEngine {
         return pageReports;
     }
 
-    private List<PageInfo> getPageReportsForElementsWithInPageClassesOnly(Set<Class<?>> allPageClasses) {
+    private List<PageInfo> getPageReportsForElementsWithInPageClassesOnly(Set<Class<?>> allPageClasses,
+                                            ElementRules elementRules) {
         List<PageInfo> pageReports = new ArrayList<>();
         for (Class<?> pageClass : allPageClasses) {
             PageInfo pageReport = new PageInfo();
@@ -141,6 +158,15 @@ public class PageEngine {
                     Map<String, String> fieldAndFieldClassName = new HashMap<>();
                     List<String> privateMethods = new ArrayList<>();
                     for (AbstractInsnNode abstractInsnNode : methodNode.instructions.toArray()) {
+                        if(elementRules.isElementsDefinedWithInPageMethodAlso()) {
+                            for (LocalVariableNode localVariableNode : methodNode.localVariables) {
+                                String fieldName = localVariableNode.name;
+                                if(!fieldName.equals("this") && localVariableNode.desc.startsWith("L")) {
+                                    isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1));
+                                    fieldAndFieldClassName.put(fieldName, pageClass.getName());
+                                }
+                            }
+                        }
                         if (abstractInsnNode.getType() == AbstractInsnNode.FIELD_INSN) {
                             FieldInsnNode fin = (FieldInsnNode) abstractInsnNode;
                             Class<?> page = pageClass;
@@ -228,5 +254,13 @@ public class PageEngine {
             return true;
         }
         return false;
+    }
+
+    private boolean isSeleniumField(String type) {
+        return (type.equals("org.openqa.selenium.By") ||
+                type.equals("org.openqa.selenium.WebElement") ||
+                type.equals("org.openqa.selenium.support.FindBy") ||
+                type.equals("org.openqa.selenium.support.FindAll") ||
+                type.equals("org.openqa.selenium.support.FindBys"));
     }
 }

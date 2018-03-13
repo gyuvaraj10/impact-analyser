@@ -1,5 +1,6 @@
 package com.sample.tests;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -31,6 +32,7 @@ public class HomePage extends BaseSeleniumPage {
     private WebElement servicesLink2;
 
     public String getOnlineCheckInHeaderText() {
+        By userName = By.name("asdad");
          if(servicesLink.getText().equals("asdasd")) {
             servicesLink1.click();
          } else {

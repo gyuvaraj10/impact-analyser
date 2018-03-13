@@ -1,6 +1,7 @@
 package com.sample.tests;
 
 import com.sample.elements.otherclass.ElementsInOtherClass;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -31,6 +32,8 @@ public class LandingPage extends HomePage {
     private WebElement servicesLink2;
 
     public String getasdkaskd() {
+        By younaughty = By.className("asd");
+        younaughty.findElement(null);
         if(servicesLink.getText().equals("asdasd")) {
             servicesLink1.click();
         }
