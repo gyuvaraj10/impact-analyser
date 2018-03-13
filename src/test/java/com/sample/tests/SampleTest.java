@@ -29,6 +29,8 @@ public class SampleTest extends BaseTest {
 //        WebDriver driver = new ChromeDriver();
 //        driver.get("https://www.amazon.co.uk/");
         page1.getOnlineCheckInHeaderText();
+        AnotherPage page = new AnotherPage();
+        page.login();
 //        HomePage page = new HomePage(null);
         String onlineText = page1.getOnlineCheckInHeaderText();
 //        page.getOnlineCheckInHeaderText1();
@@ -43,6 +45,8 @@ public class SampleTest extends BaseTest {
     public void testMain234() {
         System.setProperty("webdriver.chrome.driver","/Users/Yuvaraj/Desktop/softwares/chromedriver/chromedriver");
         String actual = "Your Amazon.co.uk";
+        AnotherPage page = new AnotherPage();
+        page.login();
         WebDriver driver = new ChromeDriver();
         driver.get("https://www.amazon.co.uk/");
         LandingPage landingPage = new LandingPage(driver);

@@ -31,7 +31,15 @@ public class ElementRules {
         this.pageClassPackages = pageClassPackages;
     }
 
+    public void setElementsDefinedWithInPageMethodAlso(boolean elementsDefinedWithInPageMethodAlso) {
+        this.elementsDefinedWithInPageMethodAlso = elementsDefinedWithInPageMethodAlso;
+    }
+    public boolean isElementsDefinedWithInPageMethodAlso() {
+        return elementsDefinedWithInPageMethodAlso;
+    }
+
     private boolean elementsDefinedWithInPageClassOnly;
+    private boolean elementsDefinedWithInPageMethodAlso;
     private List<String> elementClassPackages;
     private List<String> pageClassPackages;
 

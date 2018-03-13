@@ -9,6 +9,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
@@ -20,18 +21,31 @@ import static org.objectweb.asm.Type.getInternalName;
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
-public class ClassUtils {
+class ClassUtils {
 
-
-    public static Set<Class<?>> getAllTypesInPackages(List<String> packages) {
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setScanners(new SubTypesScanner(false))
-                .forPackages(packages.toArray(new String[]{})));
-        Set<String> allClasses = reflections.getAllTypes();
-        return allClasses.stream().filter(x->packages.stream().anyMatch(x::startsWith))
-                .map(ClassUtils::getClass).collect(Collectors.toSet());
+    /**
+     * returns field object from the fieldName
+     * @param pageClass
+     * @param fieldName
+     * @return
+     */
+    public static Field getClassField(Class<?> pageClass, String fieldName) {
+        Field field = null;
+        try {
+            field = pageClass.getDeclaredField(fieldName);
+            field.setAccessible(true);
+        } catch (NoSuchFieldException ex) {
+        }
+        return field;
     }
 
+    /**
+     * returns all pages classes from the given packages
+     * @param packages
+     * @param basePageClassName
+     * @return
+     * @throws ClassNotFoundException
+     */
     public static Set<Class<?>> getAllPageTypesInPackages(List<String> packages, String basePageClassName) throws ClassNotFoundException {
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setScanners(new SubTypesScanner(true))
