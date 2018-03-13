@@ -43,7 +43,7 @@ public class LandingPage extends HomePage {
     public void login() {
         ElementsInOtherClass.userName.toString();
         servicesLink11.get(0).click();
-        baseElement.click();
+//        baseElement.click();
     }
 
     public static LandingPage getLandingPage() {

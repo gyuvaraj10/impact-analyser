@@ -73,14 +73,15 @@ public class AsmTest {
     @Test
     public void calculateTheImpact() throws Exception {
         PageRules pageRules = new PageRules();
-        pageRules.setBasePageClass("pages.BasePage");
+        pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
         ElementRules elementRules = new ElementRules();
         elementRules.setElementsDefinedWithInPageClassOnly(true);
-        elementRules.setElementClassPackages(Arrays.asList("pages"));
-        elementRules.setPageClassPackages(Arrays.asList("pages"));
+        elementRules.setElementsDefinedWithInPageMethodAlso(false);
+        elementRules.setElementClassPackages(Arrays.asList("com.sample"));
+        elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
         BDDCollector bddCollector = new BDDCollector(pageRules, elementRules);
         List<JsonObject> cucumberReports = bddCollector.collectJsonReport(new String[]{"com.sample"},
-                "/Users/Yuvaraj/dev/selenium-guice/src/test/resources/features");
+                "/Users/Yuvaraj/dev/impact-analyser/src/test/resources");
         ReportGenerator reportGenerator = new ReportGenerator();
         reportGenerator.generateReport(cucumberReports);
     }
