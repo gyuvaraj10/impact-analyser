@@ -21,7 +21,7 @@ import static org.objectweb.asm.Type.getInternalName;
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
-class ClassUtils {
+public class ClassUtils {
 
     /**
      * returns field object from the fieldName
@@ -55,6 +55,27 @@ class ClassUtils {
         return allClasses.stream().filter(x->packages.stream().anyMatch(x.getName()::startsWith))
                 .collect(Collectors.toSet());
     }
+
+
+    public static Set<Class<?>> getAllStepDefsInPackages(List<String> packages) {
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setScanners(new MethodAnnotationsScanner())
+                .forPackages(packages.toArray(new String[]{})));
+        Class<? extends Annotation>[] cucumberKeywordClasses = new Class[]{
+                getAnnotationClass("cucumber.api.java.en.And"), getAnnotationClass("cucumber.api.java.en.But"),
+                getAnnotationClass("cucumber.api.java.en.Given"), getAnnotationClass("cucumber.api.java.en.Then"),
+                getAnnotationClass("cucumber.api.java.en.Then"), getAnnotationClass("cucumber.api.java.en.When")};
+        Set<Class<?>> testClasses = new HashSet<>();
+        for (Class<? extends Annotation> cucumberKeywordClass : cucumberKeywordClasses) {
+            for (Method method : reflections.getMethodsAnnotatedWith(cucumberKeywordClass)) {
+                if (!testClasses.contains(method.getDeclaringClass())) {
+                    testClasses.add(method.getDeclaringClass());
+                }
+            }
+        }
+        return testClasses;
+    }
+
 
     public static Set<Class<?>> getAllTestTypesInPackages(List<String> packages) {
         Reflections reflections = new Reflections(new ConfigurationBuilder()

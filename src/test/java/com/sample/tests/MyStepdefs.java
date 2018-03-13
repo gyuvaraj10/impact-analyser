@@ -38,7 +38,7 @@ public class MyStepdefs {
     @Then("^I should get this$")
     public void iShouldGetThis() throws Throwable {
         WebDriver driver = new ChromeDriver();
-        getPageObject(HomePage.class).getOnlineCheckInHeaderText();
+//        getPageObject(HomePage.class).getOnlineCheckInHeaderText();
         LandingPage.getLandingPage().getasdkaskd();
     }
 

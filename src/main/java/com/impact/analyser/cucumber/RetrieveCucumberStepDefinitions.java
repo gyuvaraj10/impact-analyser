@@ -1,6 +1,7 @@
 package com.impact.analyser.cucumber;
 
 
+import com.impact.analyser.ClassUtils;
 import com.impact.analyser.cucumber.models.CucumberElement;
 import com.impact.analyser.cucumber.models.CucumberResultReport;
 import com.impact.analyser.cucumber.models.CucumberStep;
@@ -52,11 +53,11 @@ public class RetrieveCucumberStepDefinitions {
                 String className = location.split("\\.")[0];
                 String stepMethodName = location.split("\\.")[1];
                 Class<?> stepDefClass = null;
-                for (String glue : glues) {
-                    try {
-                        stepDefClass = loader.loadClass(glue + "." + className);
-                        break;
-                    } catch (ClassNotFoundException ex) {
+                Set<Class<?>> stepDefClasses = ClassUtils.getAllStepDefsInPackages(Arrays.asList(glues));
+                if(stepDefClasses.size()>0) {
+                    Optional<Class<?>> stepDefC = stepDefClasses.stream().filter(x->x.getName().contains(className)).findFirst();
+                    if(stepDefC.isPresent()) {
+                        stepDefClass = stepDefC.get();
                     }
                 }
                 if (stepDefClass == null) {

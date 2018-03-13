@@ -1,6 +1,5 @@
 package com.impact.analyser;
 
-//import com.impact.analyser.report.PageMethodFieldReport;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.impact.analyser.report.MethodInfo;
@@ -8,16 +7,10 @@ import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.report.TestReport;
 import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.wagon.PathUtils;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**

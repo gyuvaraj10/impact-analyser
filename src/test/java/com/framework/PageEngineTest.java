@@ -3,13 +3,13 @@ package com.framework;
 import com.google.gson.Gson;
 import com.impact.analyser.PageEngine;
 import com.impact.analyser.report.PageInfo;
+import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindAll;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.FindBys;
-import org.testng.Assert;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
