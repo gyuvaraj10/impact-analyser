@@ -69,8 +69,9 @@ public class PageEngine {
                             for (LocalVariableNode localVariableNode : methodNode.localVariables) {
                                 String fieldName = localVariableNode.name;
                                 if(!fieldName.equals("this") && localVariableNode.desc.startsWith("L")) {
-                                    isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1));
-                                    fieldAndFieldClassName.put(fieldName, pageClass.getName());
+                                    if(isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1))) {
+                                        fieldAndFieldClassName.put(fieldName, pageClass.getName());
+                                    }
                                 }
                             }
                         }
@@ -162,8 +163,9 @@ public class PageEngine {
                             for (LocalVariableNode localVariableNode : methodNode.localVariables) {
                                 String fieldName = localVariableNode.name;
                                 if(!fieldName.equals("this") && localVariableNode.desc.startsWith("L")) {
-                                    isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1));
-                                    fieldAndFieldClassName.put(fieldName, pageClass.getName());
+                                    if(isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1))) {
+                                        fieldAndFieldClassName.put(fieldName, pageClass.getName());
+                                    }
                                 }
                             }
                         }
