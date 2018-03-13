@@ -69,7 +69,7 @@ public class PageEngine {
                             for (LocalVariableNode localVariableNode : methodNode.localVariables) {
                                 String fieldName = localVariableNode.name;
                                 if(!fieldName.equals("this") && localVariableNode.desc.startsWith("L")) {
-                                    if(isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1))) {
+                                    if(isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1).replace("/","."))) {
                                         fieldAndFieldClassName.put(fieldName, pageClass.getName());
                                     }
                                 }
@@ -106,9 +106,11 @@ public class PageEngine {
                         if(abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
                             ClassNode classNode = ClassUtils.getClassNode(pageClass);
                             MethodInsnNode insnNode = (MethodInsnNode)abstractInsnNode;
-                            Optional<MethodNode> optional = classNode.methods.stream().filter(x->x.name.equals(insnNode.name)).findFirst();
-                            if(optional.isPresent()) {
-                                privateMethods.add(optional.get().name);
+                            if(!insnNode.name.equals("<init>")) {
+                                Optional<MethodNode> optional = classNode.methods.stream().filter(x -> x.name.equals(insnNode.name)).findFirst();
+                                if (optional.isPresent()) {
+                                    privateMethods.add(optional.get().name);
+                                }
                             }
                         }
                     }
@@ -122,11 +124,9 @@ public class PageEngine {
                         fieldAdd = true;
                     }
                     for(MethodInfo mR: methodReports) {
-                        if(!mR.equals("<init>")) {
-                            if (privateMethods.contains(mR.getMethodName())) {
-                                privateMethodAdd = true;
-                                break;
-                            }
+                        if (privateMethods.contains(mR.getMethodName())) {
+                            privateMethodAdd = true;
+                            break;
                         }
                     }
                     if(fieldAdd|| privateMethodAdd) {
@@ -163,7 +163,7 @@ public class PageEngine {
                             for (LocalVariableNode localVariableNode : methodNode.localVariables) {
                                 String fieldName = localVariableNode.name;
                                 if(!fieldName.equals("this") && localVariableNode.desc.startsWith("L")) {
-                                    if(isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1))) {
+                                    if(isSeleniumField(localVariableNode.desc.substring(1, localVariableNode.desc.length()-1).replace("/","."))) {
                                         fieldAndFieldClassName.put(fieldName, pageClass.getName());
                                     }
                                 }
@@ -184,9 +184,11 @@ public class PageEngine {
                         if (abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
                             ClassNode classNode = ClassUtils.getClassNode(pageClass);
                             MethodInsnNode insnNode = (MethodInsnNode) abstractInsnNode;
-                            Optional<MethodNode> optional = classNode.methods.stream().filter(x -> x.name.equals(insnNode.name)).findFirst();
-                            if (optional.isPresent()) {
-                                privateMethods.add(optional.get().name);
+                            if(!insnNode.name.equals("<init>")) {
+                                Optional<MethodNode> optional = classNode.methods.stream().filter(x -> x.name.equals(insnNode.name)).findFirst();
+                                if (optional.isPresent()) {
+                                    privateMethods.add(optional.get().name);
+                                }
                             }
                         }
                     }

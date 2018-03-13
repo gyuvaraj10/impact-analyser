@@ -37,11 +37,15 @@ public class HomePage extends BaseSeleniumPage {
             servicesLink1.click();
          } else {
              getOnlineCheckInHeaderText1();
+             getOnlineCheckInHeaderText2();
          }
          return "";
     }
 
     public void getOnlineCheckInHeaderText1() {
+        servicesLink11.get(0).click();
+    }
+    public void getOnlineCheckInHeaderText2() {
         servicesLink11.get(0).click();
     }
 

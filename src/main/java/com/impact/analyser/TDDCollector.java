@@ -41,7 +41,7 @@ public class TDDCollector {
         return getJsonObjectsForHtmlReport(collectReport(testspackage));
     }
 
-    public Map<String, List<TestReport>> collectReport(String[] testspackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
+    private Map<String, List<TestReport>> collectReport(String[] testspackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
         Map<String, List<TestReport>> testReportmap= new HashMap<>();
         for(String testPackage: testspackage) {
             for(Class<?> testClass: ClassUtils.getAllTestTypesInPackages(Collections.singletonList(testPackage))) {
@@ -87,6 +87,7 @@ public class TDDCollector {
         }
         return jsonObjects;
     }
+
     private boolean isTestClass(Class<?> testClass) {
         Class<? extends Annotation> jUnitAnno = ClassUtils.getAnnotationClass("org.junit.Test");
         Class<? extends Annotation> testNGAnnot = ClassUtils.getAnnotationClass("org.testng.annotations.Test");
@@ -109,6 +110,7 @@ public class TDDCollector {
         }
         return false;
     }
+
     private List<TestReport> collectReport(Class<?> testClass) throws IOException, NoSuchFieldException, ClassNotFoundException {
         List<TestReport> testReports = new ArrayList<>();
         Set<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
