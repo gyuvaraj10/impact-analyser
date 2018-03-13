@@ -6,7 +6,7 @@
 
     <groupId>ui-impact-analyser</groupId>
     <artifactId>impact.analyser</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <dependencies>
         <dependency>
