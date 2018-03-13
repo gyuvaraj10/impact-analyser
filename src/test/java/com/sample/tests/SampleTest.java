@@ -1,19 +1,10 @@
 package com.sample.tests;
 
-//import org.junit.Test;
-import net.masterthought.cucumber.Reportable;
+
+
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.Test;
-
-import net.masterthought.cucumber.Configuration;
-import net.masterthought.cucumber.ReportBuilder;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -53,19 +44,5 @@ public class SampleTest extends BaseTest {
         landingPage.getasdkaskd();
         landingPage.login();
 
-    }
-
-    @org.junit.Test
-    public void mergeReport() {
-        File reportOutputDirectory = new File("./");
-        List<String> jsonFiles = Arrays.stream(reportOutputDirectory.listFiles())
-                .filter(file->file.getName().contains("report.json"))
-                .map(File::getAbsolutePath)
-                .collect(Collectors.toList());
-        String projectName = "cucumberProject";
-        Configuration configuration = new Configuration(reportOutputDirectory, projectName);
-        ReportBuilder reportBuilder = new ReportBuilder(jsonFiles, configuration);
-        Reportable reportable = reportBuilder.generateReports();
-        System.out.println(reportable.getSkippedSteps());
     }
 }
