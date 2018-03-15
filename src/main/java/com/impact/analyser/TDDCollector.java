@@ -2,9 +2,13 @@ package com.impact.analyser;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.inject.Inject;
+import com.impact.analyser.interfaces.IPageInformation;
+import com.impact.analyser.interfaces.ITestDefInformation;
 import com.impact.analyser.report.MethodInfo;
 import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.report.TestReport;
+import com.impact.analyser.rules.TestRules;
 import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
 import org.objectweb.asm.tree.MethodNode;
@@ -12,27 +16,66 @@ import org.objectweb.asm.tree.MethodNode;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
 public class TDDCollector {
 
-    private final RetrieveJUnitTests jUnitTests;
+    private RetrieveJUnitTests jUnitTests;
     private final RetrievePageNames retrievePageNames = new RetrievePageNames();
     private final PageEngine pageEngine = new PageEngine();
-    private final PageRules pageRules;
-    private final ElementRules elementRules;
+    private PageRules pageRules;
+    private ElementRules elementRules;
+    private TestRules testRules;
+    List<PageInfo> pageInfos;
+    private static final Logger logger = Logger.getLogger(TDDCollector.class.getName());
 
-    public TDDCollector(PageRules pageRules, ElementRules elementRules) {
+    @Inject
+    ITestDefInformation retrieveTestInformation;
+
+    @Inject
+    IPageInformation iPageInformation;
+
+
+    public void setPageRules(PageRules pageRules) {
         this.pageRules = pageRules;
-        this.elementRules = elementRules;
         jUnitTests = new RetrieveJUnitTests(pageRules);
     }
 
-    public  List<JsonObject> collectJsonReport(String[] testspackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
-        return getJsonObjectsForHtmlReport(collectReport(testspackage));
+    public void setTestRules(TestRules testRules) {
+        this.testRules = testRules;
+
     }
+
+    public void setElementRules(ElementRules elementRules) {
+        this.elementRules = elementRules;
+    }
+
+
+    public  List<JsonObject> collectJsonReport(String[] testsPackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
+        List<Class<?>> testClasses = retrieveTestInformation.getTestClasses(testsPackage);
+        logger.log(Level.INFO, "Found {0} number of test classes", testClasses.size());
+        Map<Class<?>, Set<MethodNode>> classMethodMap = new HashMap<>();
+        testClasses.forEach(x->{
+            Set<MethodNode> methodNodes = retrieveTestInformation.getTestNGTests(x);
+            classMethodMap.put(x, methodNodes);
+            logger.log(Level.INFO, "Collected {0} Methods from test class {0}", new Object[]{methodNodes.size(),  testClasses});
+        });
+        Set<Class<?>> pageClasses = iPageInformation.getAllPageTypesInPackages(pageRules);
+        logger.log(Level.INFO, "Found {0} number of page classes", pageClasses.size());
+        Map<Class<?>, Set<String>> pageAndElements = iPageInformation.getPageElements(pageClasses);
+        Map<Class<?>, Set<String>> pageAndMethods = iPageInformation.getPageMethods(pageClasses);
+
+        pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
+        return null;
+        // not changed yet
+        //return getJsonObjectsForHtmlReport(collectReport(testspackage));
+    }
+
+
 
     private Map<String, List<TestReport>> collectReport(String[] testspackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
         Map<String, List<TestReport>> testReportmap= new HashMap<>();
@@ -106,17 +149,23 @@ public class TDDCollector {
 
     private List<TestReport> collectReport(Class<?> testClass) throws IOException, NoSuchFieldException, ClassNotFoundException {
         List<TestReport> testReports = new ArrayList<>();
+        logger.log(Level.INFO, "Collecting the tests from test class:"+ testClass.getName());
         Set<MethodNode> tests = jUnitTests.getTestNGTests(testClass);
-        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
+        logger.log(Level.INFO, "Collected "+tests.size()+ " from test class:"+ testClass.getName());
         for(MethodNode testMethod: tests) {
+            logger.log(Level.INFO, "collecting the test report from test: "+ testMethod.name);
             TestReport testReport = new TestReport();
             testReport.setTestName(testMethod.name);
-            Map<String, Set<String>> pagesAndMethodsUsedInTest = retrievePageNames.getPagesAndMethods(pageRules, testMethod);
+            Map<String, Set<String>> pagesAndMethodsUsedInTest = retrievePageNames.getPagesAndMethods(pageRules, testMethod, testClass);
+            logger.log(Level.INFO, "pages used in this test are retrieved and size is: "+ pagesAndMethodsUsedInTest.size());
             List<PageInfo> pageReportList = new ArrayList<>();
             for (Map.Entry<String, Set<String>> entry : pagesAndMethodsUsedInTest.entrySet()) {
-                Optional<PageInfo> optional = pageInfos.stream().filter(x->x.getPageName().equals(entry.getKey())).findFirst();
+                logger.log(Level.INFO, "scanning page method: "+ entry.getValue()+ " for test "+ testMethod.name+ " from test class: "+ testClass.getName());
+                Optional<PageInfo> optional = pageInfos.stream().filter(x->x.getPageName().equals(entry.getKey()) &&
+                        !x.getPageName().equals(testClass.getName())).findFirst();
                 PageInfo pageReport = null;
                 if(optional.isPresent()) {
+                    logger.log(Level.INFO, "page report found");
                     pageReport = optional.get();
                     Set<MethodInfo> methodInfoSet = pageReport.getMethodReportList();
                     Set<MethodInfo> methodReport = new HashSet<>();
@@ -125,6 +174,7 @@ public class TDDCollector {
                                 .filter(x->x.getMethodName().equals(method))
                                 .findFirst();
                         if(methodInfoOptional.isPresent()) {
+                            logger.log(Level.INFO, "method info found");
                             methodReport.add(methodInfoOptional.get());
                         }
                     }

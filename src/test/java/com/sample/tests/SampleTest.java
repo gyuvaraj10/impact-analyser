@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SampleTest extends BaseTest {
+public class SampleTest extends BaseSeleniumTest {
 
     HomePage page1;
     LandingPage landingPage;

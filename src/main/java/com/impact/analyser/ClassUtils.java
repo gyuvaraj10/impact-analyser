@@ -14,6 +14,8 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Type.getInternalName;
@@ -22,6 +24,25 @@ import static org.objectweb.asm.Type.getInternalName;
  * Created by Yuvaraj on 27/02/2018.
  */
 public class ClassUtils {
+
+    private static final Logger logger = Logger.getLogger(ClassUtils.class.getName());
+
+
+    /**
+     * gets class reader object
+     * @param testClass
+     * @return
+     */
+    public static ClassReader getClassReader(Class<?> testClass) {
+        ClassReader classR = null;
+        try {
+            classR = new ClassReader(getInternalName(testClass));
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not load class {0}", testClass.getName());
+            logger.log(Level.FINEST, e.getMessage());
+        }
+        return classR;
+    }
 
     /**
      * returns field object from the fieldName
@@ -99,7 +120,7 @@ public class ClassUtils {
 
     public static Class<?> getClass(String fullyClass) {
         try {
-            return Class.forName(fullyClass);
+            return ClassLoader.getSystemClassLoader().loadClass(fullyClass);
         } catch (ClassNotFoundException e) {
             return null;
         }
