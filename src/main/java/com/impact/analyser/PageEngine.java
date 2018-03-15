@@ -4,6 +4,7 @@ import com.impact.analyser.report.MethodInfo;
 import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
+import com.impact.analyser.utils.ClassUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.tree.*;
 import java.lang.annotation.Annotation;

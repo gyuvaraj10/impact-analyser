@@ -1,15 +1,11 @@
 package com.impact.analyser;
 
-import com.impact.analyser.report.CucumberStepDef;
 import com.impact.analyser.rules.PageRules;
-import org.objectweb.asm.ClassReader;
+import com.impact.analyser.utils.ClassUtils;
 import org.objectweb.asm.tree.*;
 import org.openqa.selenium.WebElement;
 
-import java.io.IOException;
 import java.util.*;
-
-import static org.objectweb.asm.Type.getInternalName;
 
 /**
  * Created by Yuvaraj on 27/02/2018.

@@ -1,6 +1,7 @@
-package com.impact.analyser;
+package com.impact.analyser.impl;
 
 import com.google.inject.Inject;
+import com.impact.analyser.utils.ClassUtils;
 import com.impact.analyser.interfaces.ITestDefInformation;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -28,6 +29,22 @@ public class RetrieveTestInformation implements ITestDefInformation {
 
     @Inject
     private static ClassUtils classUtils;
+
+    /**
+     * returns test class and test methods map
+     * @param testClasses
+     * @return
+     */
+    @Override
+    public Map<Class<?>, Set<MethodNode>> getTestClassAndTestMethod(List<Class<?>> testClasses) {
+        Map<Class<?>, Set<MethodNode>> classMethodMap = new HashMap<>();
+        testClasses.forEach(x -> {
+            Set<MethodNode> methodNodes = getTestNGTests(x);
+            classMethodMap.put(x, methodNodes);
+            logger.log(Level.INFO, "Collected {0} Methods from test class {1}", new Object[]{methodNodes.size(), testClasses});
+        });
+        return classMethodMap;
+    }
 
     /**
      * Collect All the Test Classes

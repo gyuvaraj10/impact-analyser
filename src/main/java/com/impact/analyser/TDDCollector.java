@@ -5,12 +5,14 @@ import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.impact.analyser.interfaces.IPageInformation;
 import com.impact.analyser.interfaces.ITestDefInformation;
+import com.impact.analyser.interfaces.ITestMapper;
 import com.impact.analyser.report.MethodInfo;
 import com.impact.analyser.report.PageInfo;
 import com.impact.analyser.report.TestReport;
 import com.impact.analyser.rules.TestRules;
 import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
+import com.impact.analyser.utils.ClassUtils;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
@@ -39,6 +41,9 @@ public class TDDCollector {
     @Inject
     IPageInformation iPageInformation;
 
+    @Inject
+    ITestMapper testMapper;
+
 
     public void setPageRules(PageRules pageRules) {
         this.pageRules = pageRules;
@@ -58,22 +63,22 @@ public class TDDCollector {
     public  List<JsonObject> collectJsonReport(String[] testsPackage) throws IOException, NoSuchFieldException, ClassNotFoundException {
         List<Class<?>> testClasses = retrieveTestInformation.getTestClasses(testsPackage);
         logger.log(Level.INFO, "Found {0} number of test classes", testClasses.size());
-        Map<Class<?>, Set<MethodNode>> classMethodMap = new HashMap<>();
-        testClasses.forEach(x->{
-            Set<MethodNode> methodNodes = retrieveTestInformation.getTestNGTests(x);
-            classMethodMap.put(x, methodNodes);
-            logger.log(Level.INFO, "Collected {0} Methods from test class {0}", new Object[]{methodNodes.size(),  testClasses});
-        });
+        Map<Class<?>, Set<MethodNode>> testClassMethodMap = retrieveTestInformation.getTestClassAndTestMethod(testClasses);
+        logger.log(Level.INFO, "Retrieved test class and test method mapping for {0} test classes", testClassMethodMap.size());
         Set<Class<?>> pageClasses = iPageInformation.getAllPageTypesInPackages(pageRules);
         logger.log(Level.INFO, "Found {0} number of page classes", pageClasses.size());
         Map<Class<?>, Set<String>> pageAndElements = iPageInformation.getPageElements(pageClasses);
+        logger.info("Done retrieving page elements "+ pageAndElements.size());
         Map<Class<?>, Set<String>> pageAndMethods = iPageInformation.getPageMethods(pageClasses);
+        logger.info("Done retrieving page methods "+ pageAndMethods.size());
+        Map<String, List<TestReport>> testReportMap = testMapper.map(testClasses, testClassMethodMap, pageClasses, pageAndElements, pageAndMethods);
 
-        pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
+//        pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
         return null;
         // not changed yet
         //return getJsonObjectsForHtmlReport(collectReport(testspackage));
     }
+
 
 
 

@@ -1,7 +1,7 @@
 package com.impact.analyser.cucumber;
 
 
-import com.impact.analyser.ClassUtils;
+import com.impact.analyser.utils.ClassUtils;
 import com.impact.analyser.cucumber.models.CucumberElement;
 import com.impact.analyser.cucumber.models.CucumberResultReport;
 import com.impact.analyser.cucumber.models.CucumberStep;

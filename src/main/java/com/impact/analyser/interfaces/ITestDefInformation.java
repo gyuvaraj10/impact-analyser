@@ -3,6 +3,7 @@ package com.impact.analyser.interfaces;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,4 +16,7 @@ public interface ITestDefInformation {
     Set<MethodNode> getJUnitTests(Class<?> jUnitTestClass);
 
     Set<MethodNode> getTestNGTests(Class<?> testngTestClass);
+
+    Map<Class<?>, Set<MethodNode>> getTestClassAndTestMethod(List<Class<?>> testClasses);
+
 }

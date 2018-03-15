@@ -1,10 +1,9 @@
-package com.impact.analyser;
+package com.impact.analyser.impl;
 
 import com.google.inject.Inject;
+import com.impact.analyser.utils.ClassUtils;
 import com.impact.analyser.exceptions.PageClassNotFoundException;
 import com.impact.analyser.interfaces.IPageInformation;
-import com.impact.analyser.report.PageInfo;
-import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
 import org.apache.commons.lang3.ArrayUtils;
 import org.reflections.Reflections;
@@ -52,6 +51,7 @@ public class RetrievePageInformation implements IPageInformation {
         }
         Set<Class<?>> allClasses = reflections.getSubTypesOf(basePageClass);
         allClasses.addAll(getPageClassesWithOutBaseClass(pageRules));
+        allClasses.add(basePageClass);
         return allClasses.stream().filter(x-> Arrays.stream(packages).anyMatch(x.getName()::startsWith)
                 && !retrieveTestInformation.isTestClass(x))
                 .collect(Collectors.toSet());
@@ -84,10 +84,10 @@ public class RetrievePageInformation implements IPageInformation {
     private Map<Class<?>, Set<String>> getMethodsFromClasses(Set<Class<?>> classSet) {
         Map<Class<?>, Set<String>> map = new HashMap<>();
         for (Class<?> elementClass : classSet) {
-            Set<String> methodNames = Arrays.stream(elementClass.getMethods()).map(Method::getName).collect(Collectors.toSet());
+            Set<String> methodNames = Arrays.stream(elementClass.getDeclaredMethods()).map(Method::getName).collect(Collectors.toSet());
             if(methodNames.size() > 0) {
                 map.put(elementClass, methodNames);
-                logger.log(Level.INFO, "Found {0} number of methods from page class {0}",
+                logger.log(Level.INFO, "Found {1} number of methods from page class {0}",
                         new Object[]{elementClass, methodNames.size()});
             }
         }
@@ -107,7 +107,7 @@ public class RetrievePageInformation implements IPageInformation {
                     .map(Field::getName).collect(Collectors.toSet());
             if (seleniumFields.size() > 0) {
                 map.put(elementClass, seleniumFields);
-                logger.log(Level.INFO, "Found {0} number of elements from page class {0}",
+                logger.log(Level.INFO, "Found {1} number of elements from page class {0}",
                         new Object[]{elementClass, seleniumFields.size()});
             }
         }
@@ -129,19 +129,23 @@ public class RetrievePageInformation implements IPageInformation {
         for(Map.Entry<String, Collection<String>> type: allTypes.asMap().entrySet()) {
             String className = type.getKey();
             Class<?> typeClass = ClassUtils.getClass(className);
-            for(String field: type.getValue()) {
-                if(!field.equals("\"\"") || !field.endsWith("()")) {
-                    try {
-                        Field field1 = typeClass.getDeclaredField(field);
-                        if (isSeleniumField(field1)) {
-                            allPageClasses.add(typeClass);
-                            break;
+            if(typeClass != null) {
+                for (String field : type.getValue()) {
+                    if (!field.equals("\"\"") || !field.endsWith("()")) {
+                        try {
+                            Field field1 = typeClass.getDeclaredField(field);
+                            if (isSeleniumField(field1)) {
+                                allPageClasses.add(typeClass);
+                                break;
+                            }
+                        } catch (NoSuchFieldException e) {
+                            logger.log(Level.SEVERE, "Failed to load the field {0} please keep on this field", field);
+                            e.printStackTrace();
                         }
-                    } catch (NoSuchFieldException e) {
-                        logger.log(Level.SEVERE, "Failed to load the field {0} please keep on this field", field);
-                        e.printStackTrace();
                     }
                 }
+            } else {
+                logger.info("Class "+ className+ " is Not loaded");
             }
         }
         return allPageClasses;

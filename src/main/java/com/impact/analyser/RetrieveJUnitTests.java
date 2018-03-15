@@ -1,6 +1,7 @@
 package com.impact.analyser;
 
 import com.impact.analyser.rules.PageRules;
+import com.impact.analyser.utils.ClassUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
