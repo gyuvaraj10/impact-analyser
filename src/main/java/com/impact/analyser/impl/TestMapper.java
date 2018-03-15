@@ -65,37 +65,8 @@ public class TestMapper implements ITestMapper {
             }
             if(abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode min = (MethodInsnNode)abstractInsnNode;
-                String methodName =min.name;
-                MethodInfo methodInfo = new MethodInfo();
-                if(!methodName.contains("<init>")) {
-                    String methodOwner = min.owner.replace("/", ".");
-                    Class<?> ownerClass = classUtils.getClass(methodOwner);
-                    //if the owner of the method is the test class then we must identify the base classes that contain this method
-                    if(testClasses.contains(ownerClass)) {
-                        Class<?> superClass = ownerClass;
-                        while(superClass != Object.class) {
-                            superClass = superClass.getSuperclass();
-                            if(pageAndMethods.containsKey(superClass)) {
-                                Set<String> methods = pageAndMethods.get(superClass);
-                                if(methods != null && methods.contains(methodName)) {
-                                    methodInfo.setMethodName(methodName);
-                                    pageInfo.setPageName(superClass.getName());
-                                }
-                            }
-                        }
-                    } else if(pageAndMethods.containsKey(ownerClass)) {
-                        Set<String> methods = pageAndMethods.get(ownerClass);
-                        if(methods.contains(methodName)) {
-                            methodInfo.setMethodName(methodName);
-                            pageInfo.setPageName(ownerClass.getName());
-
-                        }
-                    }
-                }
-                if(methodInfo.getMethodName() != null) {
-                    methodInfos.add(methodInfo);
-                    pageInfo.setMethodReportList(methodInfos);
-                }
+                //expidate through the method nodes
+                expediteThroughMethodNodes(min, testClasses, pageAndMethods, pageInfo, methodInfos);
             }
             if(pageInfo.getPageName() != null) {
                 pageReportList.add(pageInfo);
@@ -104,5 +75,55 @@ public class TestMapper implements ITestMapper {
         }
         testReport.setPages(pageReportList);
         return testReport;
+    }
+
+    private void expediteThroughMethodNodes(MethodInsnNode min, List<Class<?>> testClasses,
+                                            Map<Class<?>, Set<String>> pageAndMethods,
+                                            PageInfo pageInfo, Set<MethodInfo> methodInfos) {
+        String methodName =min.name;
+        MethodInfo methodInfo = new MethodInfo();
+        if(!methodName.contains("<init>")) {
+            String methodOwner = min.owner.replace("/", ".");
+            Class<?> ownerClass = classUtils.getClass(methodOwner);
+            //if the owner of the method is the test class then we must identify the base classes that contain this method
+            if(testClasses.contains(ownerClass)) {
+                //identifying the base classes that contain this method
+                Class<?> superClass = ownerClass;
+                while(superClass != Object.class) {
+                    superClass = superClass.getSuperclass();
+                    if(pageAndMethods.containsKey(superClass)) {
+                        Set<String> methods = pageAndMethods.get(superClass);
+                        if(methods != null && methods.contains(methodName)) {
+                            methodInfo.setMethodName(methodName);
+                            pageInfo.setPageName(superClass.getName());
+                        }
+                    }
+                }
+            } else if(pageAndMethods.containsKey(ownerClass)) {
+                //collect method info otherwise
+                Set<String> methods = pageAndMethods.get(ownerClass);
+                if(methods.contains(methodName)) {
+                    ClassNode classNode = classUtils.getClassNode(ownerClass);
+                    methodInfo.setMethodName(methodName);
+                    pageInfo.setPageName(ownerClass.getName());
+                    if(classNode != null) {
+                        Optional <MethodNode> pageMethodNodeOpt = classNode.methods.stream().filter(x->x.name.equals(methodName)).findFirst();
+                        if(pageMethodNodeOpt.isPresent()) {
+                            MethodNode methodNode = pageMethodNodeOpt.get();
+                            for(AbstractInsnNode minN: methodNode.instructions.toArray()) {
+                                if(minN.getType() == AbstractInsnNode.METHOD_INSN) {
+                                    expediteThroughMethodNodes((MethodInsnNode)minN, testClasses, pageAndMethods, pageInfo, methodInfos);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        if(methodInfo.getMethodName() != null) {
+            methodInfos.add(methodInfo);
+            pageInfo.setMethodReportList(methodInfos);
+        }
     }
 }
