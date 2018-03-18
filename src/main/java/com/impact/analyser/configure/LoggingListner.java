@@ -27,7 +27,6 @@ public class LoggingListner implements TypeListener {
                 typeEncounter.register(new LoggingInjector(field));
             }
         } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         }
     }
 }

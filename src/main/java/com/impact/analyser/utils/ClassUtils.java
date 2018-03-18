@@ -30,8 +30,6 @@ public class ClassUtils {
     @Inject
     private static Logger logger;
 
-    private static ClassReader classR = null;
-    private static ClassNode classNode = new ClassNode();
     /**
      * gets class reader object
      * @param testClass
@@ -42,8 +40,8 @@ public class ClassUtils {
         try {
             classR = new ClassReader(getInternalName(testClass));
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not load class {0}", testClass.getName());
-            logger.log(Level.FINEST, e.getMessage());
+//            logger.log(Level.SEVERE, "Could not load class {0}", testClass.getName());
+//            logger.log(Level.FINEST, e.getMessage());
         }
         return classR;
     }
@@ -139,13 +137,13 @@ public class ClassUtils {
     }
 
     public static ClassNode getClassNode(Class<?> classClass) {
+        ClassReader classR;
         try {
-            System.out.println("Debuggin");
-            System.out.println(Type.getInternalName(classClass));
             classR = new ClassReader(getInternalName(classClass));
         } catch (IOException e) {
             return null;
         }
+        ClassNode classNode = new ClassNode();
         classR.accept(classNode,0);
         return classNode;
     }

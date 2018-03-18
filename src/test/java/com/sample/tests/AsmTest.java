@@ -28,22 +28,24 @@ public class AsmTest {
     @Test
     public void testTDDCollector() {
         try {
-
             PageRules pageRules = new PageRules();
             pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
             pageRules.setPageClassPackages(Arrays.asList("com.sample"));
-            ElementRules elementRules = new ElementRules();
-            elementRules.setElementsDefinedWithInPageMethodAlso(true);
-            elementRules.setElementsDefinedWithInPageClassOnly(false);
-            elementRules.setElementClassPackages(Arrays.asList("com.sample"));
-            elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
-            Injector injector = Collector.getInjector();
-            TDDCollector tddCollector = injector.getInstance(TDDCollector.class);
-            tddCollector.setElementRules(elementRules);
-            tddCollector.setPageRules(pageRules);
+//            ElementRules elementRules = new ElementRules();
+//            elementRules.setElementsDefinedWithInPageMethodAlso(true);
+//            elementRules.setElementsDefinedWithInPageClassOnly(false);
+//            elementRules.setElementClassPackages(Arrays.asList("com.sample"));
+//            elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
             TestRules testRules = new TestRules();
             testRules.setBaseTestClass("com.sample.tests.BaseSeleniumTest");
             testRules.setTestClassPackages(Arrays.asList("com.sample.tests"));
+            Injector injector = Collector.getInjector();
+            injector.injectMembers(pageRules);
+            injector.injectMembers(testRules);
+//            injector.injectMembers(elementRules);
+            TDDCollector tddCollector = injector.getInstance(TDDCollector.class);
+//            tddCollector.setElementRules(elementRules);
+            tddCollector.setPageRules(pageRules);
             tddCollector.setTestRules(testRules);
             List<JsonObject> jsonObjects = tddCollector.collectJsonReport(new String[]{"com.sample"});
             ReportGenerator reportGenerator = new ReportGenerator();

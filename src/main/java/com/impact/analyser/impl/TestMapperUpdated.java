@@ -37,15 +37,29 @@ public class TestMapperUpdated  implements ITestMapper {
     @Inject
     private GraphWriter graphWriter;
 
+    //This holds the method parent and it self as a map to make sure
+    // the scanning does not happen once the scanning is completed for a flow
+    private Map<String, Set<String>> ownerAndItsMethods;
+
+    @Inject
     private PageRules pageRules;
+    @Inject
     private TestRules testRules;
+
     private Map<Class<?>, ClassNode> pageClassNodeMap;
+    private Map<Class<?>, Set<MethodNode>> testClassMethodMap;
+    private Map<Class<?>, ClassNode> testClassNodes;
+    private Map<Class<?>, ClassNode> localNodeMap; //combination of both pageclass and test class nodes
+    private Set<Class<?>> pageClasses;
 
     public void setPageClasses(Set<Class<?>> pageClasses) {
         this.pageClasses = pageClasses;
     }
 
-    Set<Class<?>> pageClasses;
+    @Override
+    public void setTestClassMethods(Map<Class<?>, Set<MethodNode>> testClassMethodMap) {
+        this.testClassMethodMap = testClassMethodMap;
+    }
 
     public void setPageAndMethods(Map<Class<?>, Set<String>> pageAndMethods) {
         this.pageAndMethods = pageAndMethods;
@@ -80,7 +94,6 @@ public class TestMapperUpdated  implements ITestMapper {
         this.pageClassNodeMap = pageClassNodes;
     }
 
-    private Map<Class<?>, ClassNode> testClassNodes;
     /**
      * mapping method for test classes
      * @param testClasses
@@ -91,6 +104,7 @@ public class TestMapperUpdated  implements ITestMapper {
     public Map<String, List<TestReport>> map(List<Class<?>> testClasses, Map<Class<?>, ClassNode> testClassNodes,
                                              Map<Class<?>, Set<MethodNode>> testClassAndMethods) {
         this.testClassNodes = testClassNodes;
+        getPageAndTestClassNodeMaps();
         Map<String, List<TestReport>> testClassesReport = new HashMap<>();
         testClassAndMethods.entrySet().forEach(testClass -> {
             try {
@@ -113,168 +127,128 @@ public class TestMapperUpdated  implements ITestMapper {
     private List<TestReport> map(Set<MethodNode> testMethods, String testClassName) {
         List<TestReport> testReports = new ArrayList<>();
         testMethods.forEach(testMethod -> {
-            TestReport testReport = map(testMethod);
-            if(testReport != null) {
-                graphWriter.writeTestReport(testReport, testMethod.name, testClassName);
-            }
+            scanTestMethod(testMethod);
+//            if(testReport != null) {
+//                graphWriter.writeTestReport(testReport, testMethod.name, testClassName);
+//            }
         });
         return testReports;
     }
 
+    private void scanTestMethod(MethodNode testMethod) {
+        String methodName = testMethod.name;
+        System.out.println("Following are the page Elements used in test: "+ methodName+ " ----------");
+        scanTheMethodInstructions(testMethod);
+    }
+
+    private void scanTheMethodVariables(MethodNode anyMethod) {
+        for(LocalVariableNode localVariableNode: anyMethod.localVariables) {
+            String description = localVariableNode.desc;
+            String localVariableName = localVariableNode.name;
+            if(!localVariableName.equals("this") && description.startsWith("L")) {
+                description = description.replace(";","")
+                        .substring(1, description.length()-1)
+                        .replace("/",".");
+                if(pageInformation.isSeleniumField(description)) {
+                    System.out.println(localVariableName);
+                }
+            }
+        }
+    }
+
+    private void scanTheMethodInstructions(MethodNode testMethod) {
+        scanTheMethodVariables(testMethod);
+        InsnList testMethodInstructions = testMethod.instructions;
+        for(AbstractInsnNode instruction: testMethodInstructions.toArray()) {
+            if(instruction.getType() == AbstractInsnNode.METHOD_INSN) {
+                MethodInsnNode min = (MethodInsnNode)instruction;
+                boolean isInitMethod = min.name.contains("<init>");
+                if(!isInitMethod && canBeScanned(min)) {
+                    MethodNode methodNode = getMethodNode(min);
+                    if(methodNode != null) {
+                        scanTheMethodInstructions(methodNode);
+                    }
+                    //add to this map when the required condition is met  --- ownerAndItsMethods
+                }
+            } else if(instruction.getType() == AbstractInsnNode.FIELD_INSN) {
+                FieldInsnNode fieldInstruction = (FieldInsnNode) instruction;
+                Map<String, String> seleniumElement = getPageElementEntry(fieldInstruction);
+                if(seleniumElement != null) {
+                    System.out.println(new Gson().toJson(seleniumElement));
+                }
+                //record the elements
+            }
+        }
+    }
+
     /**
-     * mapping method for test method
-     * @param testMethod
+     * returns a map of single entry with field name as key and class name as value
+     * @param fieldInstruction FieldInsnNode type parameter to be passed
      * @return
      */
-    private TestReport map(MethodNode testMethod) {
-        String methodName = testMethod.name;
-//        logger.log(Level.INFO, "collecting the test report from test method: "+ methodName);
-        TestReport testReport = new TestReport();
-        for(AbstractInsnNode abstractInsnNode: testMethod.instructions.toArray()) {
-            if(abstractInsnNode.getType() == AbstractInsnNode.METHOD_INSN) {
-                MethodInsnNode min = (MethodInsnNode)abstractInsnNode;
-                if(pageRules.getPageClassPackages().stream().anyMatch(x->min.owner.replace("/",".").startsWith(x)) ||
-                        testRules.getTestClassPackages().stream().anyMatch(x->min.owner.replace("/",".").startsWith(x))) {
-                    Set<MethodInfo> pageMethods = expediteThroughMethodNodes(min);
-                    Set<MethodInfo> reportMethodInfos = testReport.getMethodInfos();
-                    if(pageMethods.size() !=0) {
-                        testReport.setTestName(methodName);
-                        if (reportMethodInfos == null || reportMethodInfos.size() == 0) {
-                            testReport.setMethodInfos(pageMethods);
-                        } else {
-                            reportMethodInfos.addAll(pageMethods);
-                        }
-                    }
-                }
+    private Map<String, String> getPageElementEntry(FieldInsnNode fieldInstruction) {
+        String fieldName = fieldInstruction.name;
+        boolean isThisField = fieldName.equals("this");
+        boolean isInitField = fieldName.equals("<init>()");
+        Map<String, String> element = new HashMap<>();
+        if(!isInitField && !isThisField) {
+            Class<?> fieldsOwnerClass = classUtils.getClass(fieldInstruction.owner.replace("/", "."));
+            Optional<Map.Entry<Class<?>, Set<String>>> optionalEntry =
+                    pageAndElements.entrySet().stream()
+                            .filter(x -> x.getKey().getName().equals(fieldsOwnerClass.getName()))
+                            .findFirst();
+            if(optionalEntry.isPresent()) {
+                Map.Entry<Class<?>,Set<String>> entry = optionalEntry.get();
+                element.put(fieldName, entry.getKey().getName());
+                return element;
             }
         }
-        if(testReport.getMethodInfos() == null && testReport.getMethodInfos().size() ==0){
-            return null;
-        } else {
-            //code to remove duplicate methods
-            Set<MethodInfo> removedDuplicates = new HashSet<>();
-            for(MethodInfo m: testReport.getMethodInfos()) {
-                removedDuplicates.add(m);
-            }
-            testReport.setMethodInfos(removedDuplicates);
-            return testReport;
-        }
+        return null;
     }
 
-    private Set<MethodInfo> expediteThroughMethodNodes(MethodInsnNode min) {
+    //TODO fix the bug with super classes
+    /**
+     * returns method node by taking the MethodInsNode as an input
+     * @param min
+     * @return
+     */
+    private MethodNode getMethodNode(MethodInsnNode min){
+        String methodOwner = min.owner.replace("/",".");
         String methodName = min.name;
-        Set<MethodInfo> classMethodInfoSet = new HashSet<>();
-        if (!methodName.contains("<init>")) {
-            String methodOwner = min.owner.replace("/", ".");
-            Class<?> ownerClass = classUtils.getClass(methodOwner);
-            Class<?> superClass = ownerClass;
-            String superClassName = superClass.getName();
-            Optional<Map.Entry<Class<?>, ClassNode>> classNodeMap = pageClassNodeMap.entrySet().stream()
-                    .filter(x->x.getKey().getName().equals(ownerClass.getName())).findFirst();
-            ClassNode node = null;
-            if(classNodeMap.isPresent()) {
-                node =  classNodeMap.get().getValue();
-            }
-            ClassNode classNode = null;
-            while(superClass!= null && (superClass != classUtils.getClass(testRules.getBaseTestClass())|| superClass != Object.class)) {
-                Optional<Map.Entry<Class<?>, ClassNode>> mapCN = testClassNodes.entrySet().stream()
-                        .filter(c->c.getKey().getName().equals(superClassName)).findFirst();
-                if(node!= null && node.methods.stream().anyMatch(x -> x.name.equals(methodName))) {
-                    classNode = node;
-                } else if(mapCN.isPresent()) {
-                    classNode = mapCN.get().getValue();
+        Class<?> methodOwnerClass = ClassUtils.getClass(methodOwner);
+        Class<?> baseTestClass = ClassUtils.getClass(testRules.getBaseTestClass());
+        Class<?> basePageClass = ClassUtils.getClass(pageRules.getBasePageClass());
+        while(methodOwnerClass != Object.class &&
+                (baseTestClass.isAssignableFrom(methodOwnerClass) ||
+                basePageClass.isAssignableFrom(methodOwnerClass)) ) {
+            Optional<Map.Entry<Class<?>, ClassNode>> classNodeMap = localNodeMap.entrySet().stream()
+                    .filter(x -> x.getKey().getName().equals(methodOwner))
+                    .findFirst();
+            if (classNodeMap.isPresent()) {
+                Map.Entry<Class<?>, ClassNode> entry = classNodeMap.get();
+                Optional<MethodNode> optionalMethodNode = entry.getValue().methods.stream()
+                        .filter(x -> x.name.equals(methodName)).findFirst();
+                if (optionalMethodNode.isPresent()) {
+                    return optionalMethodNode.get();
+                } else {
+                    //this may happen if the method owner is a super class.
+                    // In this case we would need to iterate through each super class of methodOwner
+                    methodOwnerClass = methodOwnerClass.getSuperclass();
                 }
-                if(classNode != null) {
-                    Optional<MethodNode> pageMethodNodeOpt = classNode.methods.stream().filter(x -> x.name.equals(methodName)).findFirst();
-                    if(pageMethodNodeOpt.isPresent()) {
-                        MethodNode methodNode = pageMethodNodeOpt.get();
-                        for (LocalVariableNode localVariableNode : methodNode.localVariables) {
-                            String fieldName = localVariableNode.name;
-                            if(!fieldName.equals("this") && localVariableNode.desc.startsWith("L")) {
-                                String type = localVariableNode.desc.substring(1, localVariableNode.desc.length()-1).replace("/",".");
-                                if(pageInformation.isSeleniumField(type)) {
-                                    Optional<MethodInfo> optional =classMethodInfoSet.stream()
-                                            .filter(x->x.getMethodName().equals(methodName) && x.getMethodClass().equals(methodOwner))
-                                            .findFirst();
-                                    if(optional.isPresent()){
-                                        optional.get().getFieldAndFieldClassName().put(fieldName, superClass.getName());
-                                    } else {
-                                        MethodInfo methodInfo = new MethodInfo();
-                                        methodInfo.setMethodName(methodName);
-                                        methodInfo.setMethodClass(methodOwner);
-                                        Map<String, String> fieldAndClass = new HashMap<>();
-                                        fieldAndClass.put(fieldName,superClass.getName());
-                                        methodInfo.setFieldAndFieldClassName(fieldAndClass);
-                                        methodInfo.setPageItem(true);
-                                        classMethodInfoSet.add(methodInfo);
-                                    }
-                                }
-                            }
-                        }
-                        for (AbstractInsnNode minN : methodNode.instructions.toArray()) {
-                            if (minN.getType() == AbstractInsnNode.METHOD_INSN) {
-                                MethodInsnNode mi = (MethodInsnNode)minN;
-                                if(verifyMethodIsAPageMethod(mi) || verifyMethodIsATestMethod(mi)) {
-                                    Set<MethodInfo> childMethods = expediteThroughMethodNodes(mi);
-                                    for(MethodInfo minfo: childMethods) {
-                                        // do not duplicate methods to the set
-                                        if(!classMethodInfoSet.stream().anyMatch(x->x.getMethodName().equals(minfo.getMethodName())
-                                                && x.getMethodClass().equals(minfo.getMethodClass()))) {
-                                            classMethodInfoSet.add(minfo);
-                                        }
-                                    }
-                                }
-                            } else if (minN.getType() == AbstractInsnNode.FIELD_INSN) {
-                                FieldInsnNode tin = (FieldInsnNode) minN;
-                                if (!tin.name.equals("this") && !tin.name.equals("<init>()")) {
-                                    try {
-                                        String fieldItem = tin.desc.substring(1, tin.desc.length() - 1).replace("/", ".");
-                                        Class<?> fieldType = classUtils.getClass(fieldItem);
-                                        Class<?> fieldsOwnerClass = classUtils.getClass(tin.owner.replace("/", "."));
-                                        Optional<Map.Entry<Class<?>, Set<String>>> pageElementMap = pageAndElements.entrySet()
-                                                .stream().filter(x -> x.getKey().getName().equals(fieldsOwnerClass.getName())
-                                                        && x.getValue().contains(tin.name)).findFirst();
-                                        if (fieldType != null && fieldsOwnerClass != null && pageElementMap.isPresent()) {
-//                                            logger.info("Identified an element " + tin.name + " of type " + tin.desc + " from " + tin.owner);
-                                            Optional<MethodInfo> optional =classMethodInfoSet.stream().filter(x->x.getMethodName().equals(methodName)
-                                                    && x.getMethodClass().equals(methodOwner))
-                                                    .findFirst();
-                                            if(optional.isPresent()){
-                                                optional.get().getFieldAndFieldClassName().put(tin.name, fieldsOwnerClass.getName());
-                                            } else {
-                                                MethodInfo methodInfo = new MethodInfo();
-                                                methodInfo.setMethodName(methodName);
-                                                methodInfo.setMethodClass(methodOwner);
-                                                Map<String, String> fieldAndClass = new HashMap<>();
-                                                fieldAndClass.put(tin.name,fieldsOwnerClass.getName());
-                                                methodInfo.setFieldAndFieldClassName(fieldAndClass);
-                                                methodInfo.setPageItem(true);
-                                                classMethodInfoSet.add(methodInfo);
-                                            }
-                                        } else {
-//                                            logger.info("Ignoring this element " + tin.name + " " + tin.desc);
-                                        }
-                                    } catch (IndexOutOfBoundsException ex) {
-//                                        logger.severe("Exception for : "+tin.desc+" :" +ex.getMessage());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                superClass = superClass.getSuperclass();
             }
         }
-        return classMethodInfoSet;
+        return null;
     }
 
-
-    private boolean verifyMethodIsAPageMethod(MethodInsnNode min) {
-        return (pageAndMethods.entrySet().stream().anyMatch(x->min.owner.replace("/",".").equals(x.getKey().getName()))&&
-                pageAndMethods.entrySet().stream().anyMatch(x->x.getValue().contains(min.name)));
+    private Map<Class<?>, ClassNode> getPageAndTestClassNodeMaps() {
+        localNodeMap = new HashMap<>();
+        localNodeMap.putAll(pageClassNodeMap);
+        localNodeMap.putAll(testClassNodes);
+        return localNodeMap;
     }
-
-    private boolean verifyMethodIsATestMethod(MethodInsnNode min) {
-        return testRules.getTestClassPackages().stream().anyMatch(x->min.owner.replace("/",".").startsWith(x));
+    private boolean canBeScanned(MethodInsnNode min) {
+        String methodOwner = min.owner.replace("/",".");
+        return (testClassMethodMap.entrySet().stream().anyMatch(x->x.getKey().getName().equals(methodOwner)) ||
+                pageClassNodeMap.entrySet().stream().anyMatch(x->x.getKey().getName().equals(methodOwner)));
     }
 }

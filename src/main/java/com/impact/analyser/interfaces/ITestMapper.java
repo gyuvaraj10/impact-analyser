@@ -28,6 +28,8 @@ public interface ITestMapper {
 
     void setPageClasses(Set<Class<?>> pageClasses);
 
+    void setTestClassMethods(Map<Class<?>, Set<MethodNode>> testClassMethodMap);
+
     Map<String, List<TestReport>> map(List<Class<?>> testClasses, Map<Class<?>, ClassNode> testClassNodes,
                                       Map<Class<?>, Set<MethodNode>> testClassAndMethods);
 }

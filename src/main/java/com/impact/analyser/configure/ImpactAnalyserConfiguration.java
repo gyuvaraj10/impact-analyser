@@ -2,7 +2,6 @@ package com.impact.analyser.configure;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
-import com.impact.analyser.impl.TestMapper;
 import com.impact.analyser.impl.TestMapperUpdated;
 import com.impact.analyser.interfaces.ITestMapper;
 import com.impact.analyser.utils.ClassUtils;
