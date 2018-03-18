@@ -27,7 +27,8 @@ public class ClassUtils {
 
     private static final Logger logger = Logger.getLogger(ClassUtils.class.getName());
 
-
+    private static ClassReader classR = null;
+    private static ClassNode classNode = new ClassNode();
     /**
      * gets class reader object
      * @param testClass
@@ -135,13 +136,11 @@ public class ClassUtils {
     }
 
     public static ClassNode getClassNode(Class<?> classClass) {
-        ClassReader classR = null;
         try {
             classR = new ClassReader(getInternalName(classClass));
         } catch (IOException e) {
             return null;
         }
-        ClassNode classNode = new ClassNode();
         classR.accept(classNode,0);
         return classNode;
     }

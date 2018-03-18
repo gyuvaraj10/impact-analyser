@@ -43,6 +43,5 @@ public class SampleTest extends BaseSeleniumTest {
         LandingPage landingPage = new LandingPage(driver);
         landingPage.getasdkaskd();
         landingPage.login();
-
     }
 }

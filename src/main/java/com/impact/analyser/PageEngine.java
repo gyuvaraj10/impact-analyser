@@ -116,7 +116,7 @@ public class PageEngine {
                         }
                     }
                     if(privateMethods.size() >0){
-                        methodReport.setSameClassMethods(privateMethods);
+//                        methodReport.setSameClassMethods(privateMethods);
                     }
                     boolean fieldAdd = false;
                     boolean privateMethodAdd = false;
@@ -194,7 +194,7 @@ public class PageEngine {
                         }
                     }
                     if (privateMethods.size() > 0) {
-                        methodReport.setSameClassMethods(privateMethods);
+//                        methodReport.setSameClassMethods(privateMethods);
                     }
                     if (fieldAndFieldClassName.size() > 0) {
                         methodReport.setFieldAndFieldClassName(fieldAndFieldClassName);

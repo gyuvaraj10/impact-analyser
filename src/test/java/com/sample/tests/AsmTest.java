@@ -28,18 +28,22 @@ public class AsmTest {
     @Test
     public void testTDDCollector() {
         try {
-            TestRules testRules = new TestRules();
-            testRules.setBaseTestClass("com.sample.tests.BaseSeleniumTest");
+
             PageRules pageRules = new PageRules();
             pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
+            pageRules.setPageClassPackages(Arrays.asList("com.sample"));
             ElementRules elementRules = new ElementRules();
             elementRules.setElementsDefinedWithInPageMethodAlso(true);
             elementRules.setElementsDefinedWithInPageClassOnly(false);
             elementRules.setElementClassPackages(Arrays.asList("com.sample"));
             elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
-            TDDCollector tddCollector = new TDDCollector();
+            Injector injector = Collector.getInjector();
+            TDDCollector tddCollector = injector.getInstance(TDDCollector.class);
             tddCollector.setElementRules(elementRules);
             tddCollector.setPageRules(pageRules);
+            TestRules testRules = new TestRules();
+            testRules.setBaseTestClass("com.sample.tests.BaseSeleniumTest");
+            testRules.setTestClassPackages(Arrays.asList("com.sample.tests"));
             tddCollector.setTestRules(testRules);
             List<JsonObject> jsonObjects = tddCollector.collectJsonReport(new String[]{"com.sample"});
             ReportGenerator reportGenerator = new ReportGenerator();

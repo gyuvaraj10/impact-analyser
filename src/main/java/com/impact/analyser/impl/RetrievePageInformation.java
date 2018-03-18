@@ -156,7 +156,7 @@ public class RetrievePageInformation implements IPageInformation {
      * @param field
      * @return
      */
-    private boolean isSeleniumField(Field field) {
+    public boolean isSeleniumField(Field field) {
         Class<?> webElementClass = ClassUtils.getClass("org.openqa.selenium.WebElement");
         Class<?> findByClass = ClassUtils.getAnnotationClass("org.openqa.selenium.support.FindBy");
         Class<?> findAllClass = ClassUtils.getAnnotationClass("org.openqa.selenium.support.FindAll");
@@ -184,11 +184,12 @@ public class RetrievePageInformation implements IPageInformation {
         return false;
     }
 
-    private boolean isSeleniumField(String type) {
+    public boolean isSeleniumField(String type) {
         return (type.equals("org.openqa.selenium.By") ||
                 type.equals("org.openqa.selenium.WebElement") ||
                 type.equals("org.openqa.selenium.support.FindBy") ||
                 type.equals("org.openqa.selenium.support.FindAll") ||
-                type.equals("org.openqa.selenium.support.FindBys"));
+                type.equals("org.openqa.selenium.support.FindBys") ||
+                type.equals("java.util.List<org.openqa.selenium.By>"));
     }
 }

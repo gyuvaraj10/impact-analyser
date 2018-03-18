@@ -143,12 +143,12 @@ public class BDDCollector {
                             jsonObject.addProperty("pageMethod", pageMethodName);
                             jsonObject.addProperty("fieldName", fieldName);
                             jsonObject.addProperty("fieldClass", fieldClass);
-                            List<String> privateMethods = methodInfo.getPrivateMethods();
-                            if(privateMethods!= null && !privateMethods.isEmpty()) {
-                                String pMethods = new Gson().toJson(privateMethods);
-                                pMethods = pMethods.replace("[\"", "").replace("\"]", "").replace("\",\"","\n");
-                                jsonObject.addProperty("pagePrivateMethods", pMethods);
-                            }
+//                            List<String> privateMethods = methodInfo.getPrivateMethods();
+//                            if(privateMethods!= null && !privateMethods.isEmpty()) {
+//                                String pMethods = new Gson().toJson(privateMethods);
+//                                pMethods = pMethods.replace("[\"", "").replace("\"]", "").replace("\",\"","\n");
+//                                jsonObject.addProperty("pagePrivateMethods", pMethods);
+//                            }
                             jsonObjects.add(jsonObject);
                         }
                     }

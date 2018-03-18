@@ -1,6 +1,8 @@
 package com.impact.analyser.interfaces;
 
 import com.impact.analyser.report.TestReport;
+import com.impact.analyser.rules.PageRules;
+import com.impact.analyser.rules.TestRules;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.List;
@@ -12,6 +14,10 @@ import java.util.Set;
  * Created by Yuvaraj on 15/03/2018.
  */
 public interface ITestMapper {
+
+    void setPageRules(PageRules pageRules);
+
+    void setTestRules(TestRules pageRules);
 
     Map<String, List<TestReport>> map(List<Class<?>> testClasses, Map<Class<?>, Set<MethodNode>> testClassAndMethods,
                                       Set<Class<?>> pageClasses,

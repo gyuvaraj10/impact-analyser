@@ -71,8 +71,10 @@ public class TDDCollector {
         logger.info("Done retrieving page elements "+ pageAndElements.size());
         Map<Class<?>, Set<String>> pageAndMethods = iPageInformation.getPageMethods(pageClasses);
         logger.info("Done retrieving page methods "+ pageAndMethods.size());
+        testMapper.setPageRules(pageRules);
+        testMapper.setTestRules(testRules);
         Map<String, List<TestReport>> testReportMap = testMapper.map(testClasses, testClassMethodMap, pageClasses, pageAndElements, pageAndMethods);
-
+        logger.info(String.valueOf(testReportMap.size()));
 //        pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
         return null;
         // not changed yet
@@ -94,40 +96,40 @@ public class TDDCollector {
         return testReportmap;
     }
 
-    private List<JsonObject> getJsonObjectsForHtmlReport(Map<String, List<TestReport>> reports) {
-        List<JsonObject> jsonObjects = new ArrayList<>();
-        for(Map.Entry<String, List<TestReport>> entry: reports.entrySet()) {
-            String testClassName = entry.getKey();
-            for(TestReport testReport: entry.getValue()){
-                String testMethodName = testReport.getTestName();
-                for(PageInfo pageInfo: testReport.getPages()) {
-                    String pageName = pageInfo.getPageName();
-                    for(MethodInfo methodInfo: pageInfo.getMethodReportList()) {
-                        String pageMethodName = methodInfo.getMethodName();
-                        for(Map.Entry<String, String> fieldClassEntry: methodInfo.getFieldAndFieldClassName().entrySet()){
-                            JsonObject jsonObject = new JsonObject();
-                            String fieldName = fieldClassEntry.getKey();
-                            String fieldClass = fieldClassEntry.getValue();
-                            jsonObject.addProperty("testClass", testClassName);
-                            jsonObject.addProperty("testMethod", testMethodName);
-                            jsonObject.addProperty("pageName", pageName);
-                            jsonObject.addProperty("pageMethod", pageMethodName);
-                            jsonObject.addProperty("fieldName", fieldName);
-                            jsonObject.addProperty("fieldClass", fieldClass);
-                            List<String> privateMethods = methodInfo.getPrivateMethods();
-                            if(privateMethods!= null && !privateMethods.isEmpty()) {
-                                String pMethods = new Gson().toJson(privateMethods);
-                                pMethods = pMethods.replace("[\"", "").replace("\"]", "").replace("\",\"","\n");
-                                jsonObject.addProperty("pagePrivateMethods", pMethods);
-                            }
-                            jsonObjects.add(jsonObject);
-                        }
-                    }
-                }
-            }
-        }
-        return jsonObjects;
-    }
+//    private List<JsonObject> getJsonObjectsForHtmlReport(Map<String, List<TestReport>> reports) {
+//        List<JsonObject> jsonObjects = new ArrayList<>();
+//        for(Map.Entry<String, List<TestReport>> entry: reports.entrySet()) {
+//            String testClassName = entry.getKey();
+//            for(TestReport testReport: entry.getValue()){
+//                String testMethodName = testReport.getTestName();
+//                for(PageInfo pageInfo: testReport.getPages()) {
+//                    String pageName = pageInfo.getPageName();
+//                    for(MethodInfo methodInfo: pageInfo.getMethodReportList()) {
+//                        String pageMethodName = methodInfo.getMethodName();
+//                        for(Map.Entry<String, String> fieldClassEntry: methodInfo.getFieldAndFieldClassName().entrySet()){
+//                            JsonObject jsonObject = new JsonObject();
+//                            String fieldName = fieldClassEntry.getKey();
+//                            String fieldClass = fieldClassEntry.getValue();
+//                            jsonObject.addProperty("testClass", testClassName);
+//                            jsonObject.addProperty("testMethod", testMethodName);
+//                            jsonObject.addProperty("pageName", pageName);
+//                            jsonObject.addProperty("pageMethod", pageMethodName);
+//                            jsonObject.addProperty("fieldName", fieldName);
+//                            jsonObject.addProperty("fieldClass", fieldClass);
+////                            List<String> privateMethods = methodInfo.getPrivateMethods();
+////                            if(privateMethods!= null && !privateMethods.isEmpty()) {
+////                                String pMethods = new Gson().toJson(privateMethods);
+////                                pMethods = pMethods.replace("[\"", "").replace("\"]", "").replace("\",\"","\n");
+////                                jsonObject.addProperty("pagePrivateMethods", pMethods);
+////                            }
+//                            jsonObjects.add(jsonObject);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return jsonObjects;
+//    }
 
     private boolean isTestClass(Class<?> testClass) {
         Class<? extends Annotation> jUnitAnno = ClassUtils.getAnnotationClass("org.junit.Test");
@@ -187,7 +189,7 @@ public class TDDCollector {
                     pageReportList.add(pageReport);
                 }
             }
-            testReport.setPages(pageReportList);
+//            testReport.setPages(pageReportList);
             testReports.add(testReport);
         }
         return testReports;
