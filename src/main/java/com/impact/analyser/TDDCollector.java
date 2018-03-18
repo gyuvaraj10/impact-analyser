@@ -34,7 +34,8 @@ public class TDDCollector {
     private ElementRules elementRules;
     private TestRules testRules;
     List<PageInfo> pageInfos;
-    private static final Logger logger = Logger.getLogger(TDDCollector.class.getName());
+    @Inject
+    private Logger logger;
 
     @Inject
     ITestDefInformation retrieveTestInformation;

@@ -1,5 +1,6 @@
 package com.impact.analyser.utils;
 
+import com.google.inject.Inject;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
@@ -26,7 +27,8 @@ import static org.objectweb.asm.Type.getInternalName;
  */
 public class ClassUtils {
 
-    private static final Logger logger = Logger.getLogger(ClassUtils.class.getName());
+    @Inject
+    private static Logger logger;
 
     private static ClassReader classR = null;
     private static ClassNode classNode = new ClassNode();

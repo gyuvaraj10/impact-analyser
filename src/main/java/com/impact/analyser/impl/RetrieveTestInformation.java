@@ -25,7 +25,8 @@ import static org.objectweb.asm.Type.getInternalName;
  */
 public class RetrieveTestInformation implements ITestDefInformation {
 
-    private static final Logger logger = Logger.getLogger(RetrieveTestInformation.class.getName());
+    @Inject
+    private Logger logger;
 
     @Inject
     private static ClassUtils classUtils;

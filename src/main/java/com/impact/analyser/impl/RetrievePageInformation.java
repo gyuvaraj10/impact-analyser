@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 public class RetrievePageInformation implements IPageInformation {
 
 
-    private static final Logger logger = Logger.getLogger(RetrievePageInformation.class.getName());
+    @Inject
+    private Logger logger;
 
     @Inject
     private RetrieveTestInformation retrieveTestInformation;
