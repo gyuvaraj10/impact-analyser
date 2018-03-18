@@ -20,12 +20,10 @@ public class LoggingListner implements TypeListener {
 
     @Override
     public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
-
-        Provider<Injector> injector = typeEncounter.getProvider(Injector.class);
         Field field= null;
         try {
             field = typeLiteral.getRawType().getDeclaredField("logger");
-            if(field.getType().isAssignableFrom(Logger.class)) {
+            if(field != null && field.getType().isAssignableFrom(Logger.class)) {
                 typeEncounter.register(new LoggingInjector(field));
             }
         } catch (NoSuchFieldException e) {

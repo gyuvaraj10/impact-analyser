@@ -1,20 +1,21 @@
 package com.impact.analyser.configure;
 
-import com.google.inject.Injector;
+
 import com.google.inject.MembersInjector;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Created by Yuvaraj on 18/03/2018.
  */
 public class LoggingInjector implements MembersInjector {
 
-    Field field;
-    Logger logger;
+    private Field field;
+    private Logger logger;
 
     public LoggingInjector(Field field) {
         try {
@@ -22,6 +23,9 @@ public class LoggingInjector implements MembersInjector {
             File f = new File("./debug.log");
             FileHandler fileHandler = new FileHandler(f.getAbsolutePath());
             logger = Logger.getLogger(field.getDeclaringClass().getName());
+            System.setProperty("java.util.logging.SimpleFormatter.format",
+                    "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS.%1$tL %4$-7s [%3$s] (%2$s) %5$s %6$s%n");
+            fileHandler.setFormatter(new SimpleFormatter());
             logger.addHandler(fileHandler);
             field.setAccessible(true);
         } catch (Exception ex) {

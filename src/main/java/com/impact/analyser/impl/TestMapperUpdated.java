@@ -2,6 +2,7 @@ package com.impact.analyser.impl;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
+import com.impact.analyser.GraphWriter;
 import com.impact.analyser.interfaces.IPageInformation;
 import com.impact.analyser.interfaces.ITestDefInformation;
 import com.impact.analyser.interfaces.ITestMapper;
@@ -17,12 +18,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
-/**
- * Created by Yuvaraj on 15/03/2018.
- */
-public class TestMapper implements ITestMapper {
 
-//    private static final Logger logger = Logger.getLogger(TestMapper.class.getName());
+/**
+ * Created by Yuvaraj on 18/03/2018.
+ */
+public class TestMapperUpdated  implements ITestMapper {
+
 
     @Inject
     private static ClassUtils classUtils;
@@ -32,6 +33,9 @@ public class TestMapper implements ITestMapper {
 
     @Inject
     private ITestDefInformation testInformation;
+
+    @Inject
+    private GraphWriter graphWriter;
 
     private PageRules pageRules;
     private TestRules testRules;
@@ -89,8 +93,14 @@ public class TestMapper implements ITestMapper {
         this.testClassNodes = testClassNodes;
         Map<String, List<TestReport>> testClassesReport = new HashMap<>();
         testClassAndMethods.entrySet().forEach(testClass -> {
+            try {
+                //creating a directory for test class
+                graphWriter.init(testClass.getKey().getName());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             testClassesReport.put(testClass.getKey().getName(),
-                    map(testClass.getValue()));
+                    map(testClass.getValue(), testClass.getKey().getName()));
         });
         return testClassesReport;
     }
@@ -100,19 +110,12 @@ public class TestMapper implements ITestMapper {
      * @param testMethods
      * @return
      */
-    private List<TestReport> map(Set<MethodNode> testMethods) {
+    private List<TestReport> map(Set<MethodNode> testMethods, String testClassName) {
         List<TestReport> testReports = new ArrayList<>();
         testMethods.forEach(testMethod -> {
             TestReport testReport = map(testMethod);
             if(testReport != null) {
-                Gson gson = new Gson();
-                String testReportJson = gson.toJson(testReport);
-                try {
-                    FileUtils.writeStringToFile(new File(testMethod.name), testReportJson, Charset.defaultCharset());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-//                testReports.add(testReport);
+                graphWriter.writeTestReport(testReport, testMethod.name, testClassName);
             }
         });
         return testReports;
@@ -146,12 +149,12 @@ public class TestMapper implements ITestMapper {
             }
         }
         if(testReport.getMethodInfos() == null && testReport.getMethodInfos().size() ==0){
-             return null;
+            return null;
         } else {
             //code to remove duplicate methods
             Set<MethodInfo> removedDuplicates = new HashSet<>();
             for(MethodInfo m: testReport.getMethodInfos()) {
-             removedDuplicates.add(m);
+                removedDuplicates.add(m);
             }
             testReport.setMethodInfos(removedDuplicates);
             return testReport;
