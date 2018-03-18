@@ -65,6 +65,17 @@ public class RetrieveTestInformation implements ITestDefInformation {
         return testClasses;
     }
 
+    @Override
+    public Map<Class<?>, ClassNode> getTestClassAndNode(String[] testsPackages) {
+        Map<Class<?>, ClassNode> classNodeMap = new HashMap<>();
+        List<Class<?>> testClasses = getTestClasses(testsPackages);
+        testClasses.addAll(getSuperClassesOfTestClasses(testClasses));
+        for(Class<?> testClass: testClasses) {
+            classNodeMap.put(testClass, classUtils.getClassNode(testClass));
+        }
+        return classNodeMap;
+    }
+
 
     @Override
     public Set<MethodNode> getJUnitTests(Class<?> testClass)  {
@@ -164,5 +175,22 @@ public class RetrieveTestInformation implements ITestDefInformation {
             testClasses.add(m.getDeclaringClass());
         }
         return testClasses.stream().filter(x->packages.stream().anyMatch(x.getName()::startsWith)).collect(Collectors.toSet());
+    }
+
+    /**
+     * gets super classes of all the test classes
+     * @param testClasses
+     * @return
+     */
+    private Set<Class<?>> getSuperClassesOfTestClasses(List<Class<?>> testClasses) {
+        Set<String> testClassSuperClassSet = new HashSet<>();
+        for(Class<?> testClass: testClasses) {
+            Class<?> superClass = testClass.getSuperclass();
+            while(superClass != Object.class) {
+                testClassSuperClassSet.add(superClass.getName());
+                superClass = superClass.getSuperclass();
+            }
+        }
+        return testClassSuperClassSet.stream().map(x->classUtils.getClass(x)).collect(Collectors.toSet());
     }
 }

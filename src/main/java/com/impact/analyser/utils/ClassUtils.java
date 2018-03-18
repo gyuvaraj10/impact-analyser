@@ -1,6 +1,7 @@
 package com.impact.analyser.utils;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -137,6 +138,8 @@ public class ClassUtils {
 
     public static ClassNode getClassNode(Class<?> classClass) {
         try {
+            System.out.println("Debuggin");
+            System.out.println(Type.getInternalName(classClass));
             classR = new ClassReader(getInternalName(classClass));
         } catch (IOException e) {
             return null;

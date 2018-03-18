@@ -6,6 +6,7 @@ import com.impact.analyser.exceptions.PageClassNotFoundException;
 import com.impact.analyser.interfaces.IPageInformation;
 import com.impact.analyser.rules.PageRules;
 import org.apache.commons.lang3.ArrayUtils;
+import org.objectweb.asm.tree.ClassNode;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeElementsScanner;
@@ -29,6 +30,9 @@ public class RetrievePageInformation implements IPageInformation {
 
     @Inject
     private RetrieveTestInformation retrieveTestInformation;
+
+    @Inject
+    private ClassUtils classUtils;
 
     /**
      * returns all pages classes from the given packages
@@ -55,6 +59,15 @@ public class RetrievePageInformation implements IPageInformation {
         return allClasses.stream().filter(x-> Arrays.stream(packages).anyMatch(x.getName()::startsWith)
                 && !retrieveTestInformation.isTestClass(x))
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Map<Class<?>, ClassNode> getPageClassNodeMap(Set<Class<?>> classSet) {
+        Map<Class<?>, ClassNode> classNodeMap = new HashMap<>();
+        for(Class<?> pageClass: classSet) {
+            classNodeMap.put(pageClass, classUtils.getClassNode(pageClass));
+        }
+        return classNodeMap;
     }
 
 

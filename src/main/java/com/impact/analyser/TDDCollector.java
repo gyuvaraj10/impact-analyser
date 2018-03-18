@@ -13,6 +13,7 @@ import com.impact.analyser.rules.TestRules;
 import com.impact.analyser.rules.ElementRules;
 import com.impact.analyser.rules.PageRules;
 import com.impact.analyser.utils.ClassUtils;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
@@ -64,6 +65,7 @@ public class TDDCollector {
         List<Class<?>> testClasses = retrieveTestInformation.getTestClasses(testsPackage);
         logger.log(Level.INFO, "Found {0} number of test classes", testClasses.size());
         Map<Class<?>, Set<MethodNode>> testClassMethodMap = retrieveTestInformation.getTestClassAndTestMethod(testClasses);
+        Map<Class<?>, ClassNode> testClassNodeMap = retrieveTestInformation.getTestClassAndNode(testsPackage);
         logger.log(Level.INFO, "Retrieved test class and test method mapping for {0} test classes", testClassMethodMap.size());
         Set<Class<?>> pageClasses = iPageInformation.getAllPageTypesInPackages(pageRules);
         logger.log(Level.INFO, "Found {0} number of page classes", pageClasses.size());
@@ -71,9 +73,15 @@ public class TDDCollector {
         logger.info("Done retrieving page elements "+ pageAndElements.size());
         Map<Class<?>, Set<String>> pageAndMethods = iPageInformation.getPageMethods(pageClasses);
         logger.info("Done retrieving page methods "+ pageAndMethods.size());
+        Map<Class<?>, ClassNode> pageClassNodeMap = iPageInformation.getPageClassNodeMap(pageClasses);
         testMapper.setPageRules(pageRules);
         testMapper.setTestRules(testRules);
-        Map<String, List<TestReport>> testReportMap = testMapper.map(testClasses, testClassMethodMap, pageClasses, pageAndElements, pageAndMethods);
+        testMapper.setPageClassNodes(pageClassNodeMap);
+        testMapper.setPageAndMethods(pageAndMethods);
+        testMapper.setPageClasses(pageClasses);
+        testMapper.setPageAndElements(pageAndElements);
+        testMapper.setPageAndMethods(pageAndMethods);
+        Map<String, List<TestReport>> testReportMap = testMapper.map(testClasses, testClassNodeMap, testClassMethodMap);
         logger.info(String.valueOf(testReportMap.size()));
 //        pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
         return null;

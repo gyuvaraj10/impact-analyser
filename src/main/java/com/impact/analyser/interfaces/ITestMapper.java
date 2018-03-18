@@ -3,6 +3,7 @@ package com.impact.analyser.interfaces;
 import com.impact.analyser.report.TestReport;
 import com.impact.analyser.rules.PageRules;
 import com.impact.analyser.rules.TestRules;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.List;
@@ -19,8 +20,14 @@ public interface ITestMapper {
 
     void setTestRules(TestRules pageRules);
 
-    Map<String, List<TestReport>> map(List<Class<?>> testClasses, Map<Class<?>, Set<MethodNode>> testClassAndMethods,
-                                      Set<Class<?>> pageClasses,
-                                      Map<Class<?>, Set<String>> pageAndElements,
-                                      Map<Class<?>, Set<String>> pageAndMethods);
+    void setPageClassNodes(Map<Class<?>, ClassNode> pageClassNodes);
+
+    void setPageAndMethods(Map<Class<?>, Set<String>> pageAndMethods);
+
+    void setPageAndElements(Map<Class<?>, Set<String>> pageAndElements);
+
+    void setPageClasses(Set<Class<?>> pageClasses);
+
+    Map<String, List<TestReport>> map(List<Class<?>> testClasses, Map<Class<?>, ClassNode> testClassNodes,
+                                      Map<Class<?>, Set<MethodNode>> testClassAndMethods);
 }
