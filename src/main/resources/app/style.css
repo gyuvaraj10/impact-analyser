@@ -1,0 +1,9 @@
+ td, th {
+    width: 1px;
+    white-space: pre;
+    font-weight:100;
+    font-size:13;
+}
+.report {
+    color: red;
+}
