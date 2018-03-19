@@ -17,10 +17,10 @@ public class LoggingInjector implements MembersInjector {
     private Field field;
     private Logger logger;
 
-    public LoggingInjector(Field field) {
+    public LoggingInjector(Field field, String name) {
         try {
             this.field = field;
-            File f = new File("./debug.log");
+            File f = new File(String.format("./%s.log",name));
             FileHandler fileHandler = new FileHandler(f.getAbsolutePath());
             logger = Logger.getLogger(field.getDeclaringClass().getName());
             System.setProperty("java.util.logging.SimpleFormatter.format",

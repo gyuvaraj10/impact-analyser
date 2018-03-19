@@ -22,7 +22,7 @@ public class GraphWriter {
     }
 
     public void writeTestReport(TestReport testReport, String testMethodName, String testClassName) {
-        String folderPath = String.format("./impact/%s/%s.gson", testClassName, testMethodName);
+        String folderPath = String.format("./impact/%s/%s.json", testClassName, testMethodName);
         Gson gson = new Gson();
         String testReportJson = gson.toJson(testReport);
         try {

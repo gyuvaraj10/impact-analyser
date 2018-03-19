@@ -1,12 +1,33 @@
 package com.impact.analyser.report;
 
-import java.util.List;
 import java.util.Set;
 
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
 public class TestReport {
+
+    private String testName;
+
+    private String testClassName;
+
+    private Set<FieldReport> fieldReports;
+
+    public String getTestClassName() {
+        return testClassName;
+    }
+
+    public void setTestClassName(String testClassName) {
+        this.testClassName = testClassName;
+    }
+
+    public Set<FieldReport> getFieldReports() {
+        return fieldReports;
+    }
+
+    public void setFieldReports(Set<FieldReport> fieldReports) {
+        this.fieldReports = fieldReports;
+    }
 
     public String getTestName() {
         return testName;
@@ -16,25 +37,24 @@ public class TestReport {
         this.testName = testName;
     }
 
-    private String testName;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TestReport)) return false;
 
-    public Set<MethodInfo> getMethodInfos() {
-        return methodInfos;
+        TestReport that = (TestReport) o;
+
+        if (!getTestName().equals(that.getTestName())) return false;
+        if (!getTestClassName().equals(that.getTestClassName())) return false;
+        return getFieldReports().equals(that.getFieldReports());
+
     }
 
-    public void setMethodInfos(Set<MethodInfo> methodInfos) {
-        this.methodInfos = methodInfos;
+    @Override
+    public int hashCode() {
+        int result = getTestName().hashCode();
+        result = 31 * result + getTestClassName().hashCode();
+        result = 31 * result + getFieldReports().hashCode();
+        return result;
     }
-
-    private Set<MethodInfo> methodInfos;
-
-//    private List<PageInfo> pages;
-
-//    public List<PageInfo> getPages() {
-//        return pages;
-//    }
-//
-//    public void setPages(List<PageInfo> pages) {
-//        this.pages = pages;
-//    }
 }

@@ -6,6 +6,7 @@ import com.impact.analyser.GraphWriter;
 import com.impact.analyser.interfaces.IPageInformation;
 import com.impact.analyser.interfaces.ITestDefInformation;
 import com.impact.analyser.interfaces.ITestMapper;
+import com.impact.analyser.report.FieldReport;
 import com.impact.analyser.report.MethodInfo;
 import com.impact.analyser.report.TestReport;
 import com.impact.analyser.rules.PageRules;
@@ -18,12 +19,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Yuvaraj on 18/03/2018.
  */
 public class TestMapperUpdated  implements ITestMapper {
 
+
+    @Inject
+    private Logger logger;
 
     @Inject
     private static ClassUtils classUtils;
@@ -43,6 +49,7 @@ public class TestMapperUpdated  implements ITestMapper {
 
     @Inject
     private PageRules pageRules;
+
     @Inject
     private TestRules testRules;
 
@@ -73,16 +80,8 @@ public class TestMapperUpdated  implements ITestMapper {
 
     private Map<Class<?>, Set<String>> pageAndElements;
 
-    private PageRules getPageRules() {
-        return pageRules;
-    }
-
     public void setPageRules(PageRules pageRules) {
         this.pageRules = pageRules;
-    }
-
-    private TestRules getTestRules() {
-        return testRules;
     }
 
     public void setTestRules(TestRules testRules) {
@@ -96,27 +95,19 @@ public class TestMapperUpdated  implements ITestMapper {
 
     /**
      * mapping method for test classes
-     * @param testClasses
      * @param testClassAndMethods
      * @return
      */
     @Override
-    public Map<String, List<TestReport>> map(List<Class<?>> testClasses, Map<Class<?>, ClassNode> testClassNodes,
-                                             Map<Class<?>, Set<MethodNode>> testClassAndMethods) {
+    public void map(Map<Class<?>, ClassNode> testClassNodes,
+                                             Map<Class<?>, Set<MethodNode>> testClassAndMethods) throws IOException {
         this.testClassNodes = testClassNodes;
         getPageAndTestClassNodeMaps();
-        Map<String, List<TestReport>> testClassesReport = new HashMap<>();
-        testClassAndMethods.entrySet().forEach(testClass -> {
-            try {
-                //creating a directory for test class
-                graphWriter.init(testClass.getKey().getName());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            testClassesReport.put(testClass.getKey().getName(),
-                    map(testClass.getValue(), testClass.getKey().getName()));
-        });
-        return testClassesReport;
+        for(Map.Entry<Class<?>, Set<MethodNode>> entry: testClassAndMethods.entrySet()) {
+            //creating a directory for test class
+            graphWriter.init(entry.getKey().getName());
+            map(entry.getValue(), entry.getKey().getName());
+        }
     }
 
     /**
@@ -127,21 +118,21 @@ public class TestMapperUpdated  implements ITestMapper {
     private List<TestReport> map(Set<MethodNode> testMethods, String testClassName) {
         List<TestReport> testReports = new ArrayList<>();
         testMethods.forEach(testMethod -> {
-            scanTestMethod(testMethod);
-//            if(testReport != null) {
-//                graphWriter.writeTestReport(testReport, testMethod.name, testClassName);
-//            }
+            TestReport testReport = new TestReport();
+            testReport.setTestName(testMethod.name);
+            testReport.setTestClassName(testClassName);
+            testReport.setFieldReports(scanTestMethod(testMethod));
+            graphWriter.writeTestReport(testReport, testMethod.name, testClassName);
         });
         return testReports;
     }
 
-    private void scanTestMethod(MethodNode testMethod) {
-        String methodName = testMethod.name;
-        System.out.println("Following are the page Elements used in test: "+ methodName+ " ----------");
-        scanTheMethodInstructions(testMethod);
+    private Set<FieldReport> scanTestMethod(MethodNode testMethod) {
+        return scanTheMethodInstructions(testMethod);
     }
 
-    private void scanTheMethodVariables(MethodNode anyMethod) {
+    private Set<FieldReport> scanTheMethodVariables(MethodNode anyMethod) {
+        Set<FieldReport> fieldReports = new HashSet<>();
         for(LocalVariableNode localVariableNode: anyMethod.localVariables) {
             String description = localVariableNode.desc;
             String localVariableName = localVariableNode.name;
@@ -150,14 +141,20 @@ public class TestMapperUpdated  implements ITestMapper {
                         .substring(1, description.length()-1)
                         .replace("/",".");
                 if(pageInformation.isSeleniumField(description)) {
-                    System.out.println(localVariableName);
+                    logger.log(Level.INFO, localVariableName);
+                    FieldReport fieldReport = new FieldReport();
+                    fieldReport.setFieldName(localVariableName);
+                    fieldReport.setFieldClass(""); // set the field's owner class Name
+                    fieldReports.add(fieldReport);
                 }
             }
         }
+        return fieldReports;
     }
 
-    private void scanTheMethodInstructions(MethodNode testMethod) {
-        scanTheMethodVariables(testMethod);
+    private Set<FieldReport> scanTheMethodInstructions(MethodNode testMethod) {
+        Set<FieldReport> fieldReports = new HashSet<>();
+        fieldReports.addAll(scanTheMethodVariables(testMethod));
         InsnList testMethodInstructions = testMethod.instructions;
         for(AbstractInsnNode instruction: testMethodInstructions.toArray()) {
             if(instruction.getType() == AbstractInsnNode.METHOD_INSN) {
@@ -166,19 +163,25 @@ public class TestMapperUpdated  implements ITestMapper {
                 if(!isInitMethod && canBeScanned(min)) {
                     MethodNode methodNode = getMethodNode(min);
                     if(methodNode != null) {
-                        scanTheMethodInstructions(methodNode);
+                        fieldReports.addAll(scanTheMethodInstructions(methodNode));
                     }
                     //add to this map when the required condition is met  --- ownerAndItsMethods
                 }
             } else if(instruction.getType() == AbstractInsnNode.FIELD_INSN) {
                 FieldInsnNode fieldInstruction = (FieldInsnNode) instruction;
                 Map<String, String> seleniumElement = getPageElementEntry(fieldInstruction);
-                if(seleniumElement != null) {
-                    System.out.println(new Gson().toJson(seleniumElement));
+                if(seleniumElement != null && !seleniumElement.isEmpty()) {
+                    FieldReport fieldReport = new FieldReport();
+                    for(Map.Entry<String, String> entrySet: seleniumElement.entrySet()){
+                        fieldReport.setFieldName(entrySet.getKey());
+                        fieldReport.setFieldClass(entrySet.getValue());
+                    }
+                    fieldReports.add(fieldReport);
+                    logger.log(Level.INFO, new Gson().toJson(seleniumElement));
                 }
-                //record the elements
             }
         }
+        return fieldReports;
     }
 
     /**
@@ -206,7 +209,6 @@ public class TestMapperUpdated  implements ITestMapper {
         return null;
     }
 
-    //TODO fix the bug with super classes
     /**
      * returns method node by taking the MethodInsNode as an input
      * @param min
@@ -215,27 +217,32 @@ public class TestMapperUpdated  implements ITestMapper {
     private MethodNode getMethodNode(MethodInsnNode min){
         String methodOwner = min.owner.replace("/",".");
         String methodName = min.name;
-        Class<?> methodOwnerClass = ClassUtils.getClass(methodOwner);
-        Class<?> baseTestClass = ClassUtils.getClass(testRules.getBaseTestClass());
-        Class<?> basePageClass = ClassUtils.getClass(pageRules.getBasePageClass());
+        String methodDescription = min.desc;
+        Class<?> methodOwnerClass = classUtils.getClass(methodOwner);
+        Class<?> baseTestClass = classUtils.getClass(testRules.getBaseTestClass());
+        Class<?> basePageClass = classUtils.getClass(pageRules.getBasePageClass());
         while(methodOwnerClass != Object.class &&
                 (baseTestClass.isAssignableFrom(methodOwnerClass) ||
                 basePageClass.isAssignableFrom(methodOwnerClass)) ) {
-            Optional<Map.Entry<Class<?>, ClassNode>> classNodeMap = localNodeMap.entrySet().stream()
-                    .filter(x -> x.getKey().getName().equals(methodOwner))
-                    .findFirst();
-            if (classNodeMap.isPresent()) {
-                Map.Entry<Class<?>, ClassNode> entry = classNodeMap.get();
-                Optional<MethodNode> optionalMethodNode = entry.getValue().methods.stream()
-                        .filter(x -> x.name.equals(methodName)).findFirst();
-                if (optionalMethodNode.isPresent()) {
-                    return optionalMethodNode.get();
-                } else {
-                    //this may happen if the method owner is a super class.
-                    // In this case we would need to iterate through each super class of methodOwner
-                    methodOwnerClass = methodOwnerClass.getSuperclass();
+            ClassNode classNode = null;
+            for(Map.Entry<Class<?>, ClassNode> localNodeEntry: localNodeMap.entrySet()) {
+                String className = localNodeEntry.getKey().getName();
+                if(className.equals(methodOwner)) {
+                    classNode = localNodeEntry.getValue();
+                    break;
                 }
             }
+            if (classNode != null) {
+                Optional<MethodNode> optionalMethodNode = classNode.methods.stream()
+                        .filter(x -> x.name.equals(methodName) && x.desc.equals(methodDescription)).findFirst();
+                if (optionalMethodNode.isPresent()) {
+                    return optionalMethodNode.get();
+                }
+            }
+            //this may happen if the method owner is a super class.
+            // In this case we would need to iterate through each super class of methodOwner
+            methodOwnerClass = methodOwnerClass.getSuperclass();
+            methodOwner = methodOwnerClass.getName();
         }
         return null;
     }
@@ -246,6 +253,13 @@ public class TestMapperUpdated  implements ITestMapper {
         localNodeMap.putAll(testClassNodes);
         return localNodeMap;
     }
+
+    /**
+     * verifies if the method is eligible for scanning by checking if the methods owner/class is from test classes
+     * or page classes
+     * @param min
+     * @return
+     */
     private boolean canBeScanned(MethodInsnNode min) {
         String methodOwner = min.owner.replace("/",".");
         return (testClassMethodMap.entrySet().stream().anyMatch(x->x.getKey().getName().equals(methodOwner)) ||

@@ -24,7 +24,7 @@ public class LoggingListner implements TypeListener {
         try {
             field = typeLiteral.getRawType().getDeclaredField("logger");
             if(field != null && field.getType().isAssignableFrom(Logger.class)) {
-                typeEncounter.register(new LoggingInjector(field));
+                typeEncounter.register(new LoggingInjector(field, typeLiteral.getType().getTypeName()));
             }
         } catch (NoSuchFieldException e) {
         }

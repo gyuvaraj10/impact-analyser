@@ -6,6 +6,7 @@ import com.impact.analyser.rules.TestRules;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +31,6 @@ public interface ITestMapper {
 
     void setTestClassMethods(Map<Class<?>, Set<MethodNode>> testClassMethodMap);
 
-    Map<String, List<TestReport>> map(List<Class<?>> testClasses, Map<Class<?>, ClassNode> testClassNodes,
-                                      Map<Class<?>, Set<MethodNode>> testClassAndMethods);
+    void map(Map<Class<?>, ClassNode> testClassNodes,
+                                      Map<Class<?>, Set<MethodNode>> testClassAndMethods) throws IOException;
 }

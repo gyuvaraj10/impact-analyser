@@ -21,7 +21,7 @@ public class SampleTest extends BaseSeleniumTest {
 //        driver.get("https://www.amazon.co.uk/");
         page1.getOnlineCheckInHeaderText();
         AnotherPage page = new AnotherPage();
-        page.login();
+        page.login("", "");
 //        HomePage page = new HomePage(null);
         String onlineText = page1.getOnlineCheckInHeaderText();
 //        page.getOnlineCheckInHeaderText1();
@@ -37,7 +37,7 @@ public class SampleTest extends BaseSeleniumTest {
         System.setProperty("webdriver.chrome.driver","/Users/Yuvaraj/Desktop/softwares/chromedriver/chromedriver");
         String actual = "Your Amazon.co.uk";
         AnotherPage page = new AnotherPage();
-        page.login();
+        page.login("","");
         WebDriver driver = new ChromeDriver();
         driver.get("https://www.amazon.co.uk/");
         LandingPage landingPage = new LandingPage(driver);

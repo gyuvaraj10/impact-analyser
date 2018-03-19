@@ -7,7 +7,7 @@ import org.openqa.selenium.By;
  */
 public class AnotherPage extends BaseSeleniumPage {
 
-    public void login() {
+    public void login(String userName, String password) {
         By use = By.className("");
         By pass = By.partialLinkText("dasd");
         use.findElement(null);
