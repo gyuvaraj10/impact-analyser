@@ -9,7 +9,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.*;
 import static java.lang.String.format;
@@ -32,12 +31,15 @@ public class ReportGenerator {
             "/app/bootstrap/js/bootstrap.min.js",
             "/app/jquery/jquery-1.8.2.min.js",
             "/app/jquery/style.css",
+            "/app/chartjs/moment.min.js",
+            "/app/chartjs/Chart.bundle.min.js",
             "/app/index.html"
     };
 
     public void generateReport() throws Exception {
         init();
         generateSummaryReport();
+//        generateChartData();
         generateDetailedReport();
     }
 
@@ -50,6 +52,40 @@ public class ReportGenerator {
                     indexHtml, "UTF-8");
         }
     }
+
+//    private void generateChartData() throws IOException {
+//        String baseDirPath = System.getProperty("user.dir");
+//        File impactAnalysisDir = Paths.get(baseDirPath,"impact").toFile();
+//        String chartsFile = Paths.get(impactAnalysisDir.getAbsolutePath(),"app", "charts.js").toString();
+//        FileWriter fileWriter = new FileWriter(chartsFile);
+//        fileWriter.append("$(document).ready(function(){");
+//        fileWriter.append("var ctx = $('#chart');");
+//        fileWriter.append(format("var data=["));
+//        List<ImpactReport> impactReports = getImpactReportSummary();
+//        Set<String> pageNames = getAllPagesUsed();
+//        for(String name: pageNames) {
+//            if(!name.isEmpty()) {
+//                Set<String> testSet = new HashSet<>();
+//                for (ImpactReport impactReport : impactReports) {
+//                    for (MethodImpactReport impact : impactReport.getTestMethods()) {
+//                        for (Map.Entry<String, String> entry : impact.getFieldMaps().entrySet()) {
+//                            String pageName = entry.getValue();
+//                            if (name.equals(pageName)) {
+//                                testSet.add(impact.getMethodName());
+//                            }
+//                        }
+//                    }
+//                }
+//                fileWriter.append(format("{x:'%s',y:%s},", name, testSet.size()));
+//            }
+//        }
+//        fileWriter.append("];");
+//        fileWriter.append("var options = {}");
+//        fileWriter.append("var myBarChart = new Chart(ctx, { type: 'horizontalBar', data: data, options:options});");
+//        fileWriter.append("});");
+//        fileWriter.flush();
+//        fileWriter.close();
+//    }
 
 
     private void generateDetailedReport() throws IOException {

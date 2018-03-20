@@ -2,33 +2,47 @@
     <head>
         <script src="./bootstrap/js/bootstrap.min.js"></script>
         <script src="./jquery/jquery-1.8.2.min.js"></script>
+        <script src="./chartjs/moment.min.js"></script>
+        <script src="./chartjs/Chart.bundle.min.js"></script>
         <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" href="./jquery/style.css">
         <script src="./summary.js"></script>
+        <script src="./charts.js"></script>
         <script src="./detailed-summary.js"></script>
     </head>
     <body>
-        <table id="impact-summary" class="table table-bordered table-hover" align="center">
-            <thead class="thead-dark">
-                <tr>
-                    <th scope="col">Page Name</th>
-                    <th scope="col">Number of Tests Impacted</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <br>
-        <table id="detail-impact-summary" class="table table-bordered table-hover" align="center">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Page Name</th>
-                    <th>Test Class</th>
-                    <th>Test Methods</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div class="container">
+            <div class="row">
+                <!--<div class="col">-->
+                    <table id="impact-summary" class="table table-bordered table-hover" align="center">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Page Name</th>
+                                <th scope="col">Number of Tests Impacted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                <!--</div>-->
+                <!--<div class="col">-->
+                    <!--<canvas id="chart"></canvas>-->
+                <!--</div>-->
+            </div>
+            <br>
+            <div class="row">
+                <table id="detail-impact-summary" class="table table-bordered table-hover" align="center">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Page Name</th>
+                            <th>Test Class</th>
+                            <th>Test Methods</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </body>
 </html>
