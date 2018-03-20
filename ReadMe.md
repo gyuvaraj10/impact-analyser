@@ -84,3 +84,29 @@ _Following the steps to calculate the impact_
  1. Once the test execution is successful, you will see a folder named 'impact' in your project directory in which you will find index.html, report.json files
  The HTML report will look like 
  [HTML REPORT](htmlreport.png)
+
+Example Test:
+```
+ @Test
+    public void testTDDCollector() {
+        try {
+            PageRules pageRules = new PageRules();
+            pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
+            pageRules.setPageClassPackages(Arrays.asList("com.sample"));
+            TestRules testRules = new TestRules();
+            testRules.setBaseTestClass("com.sample.tests.BaseSeleniumTest");
+            testRules.setTestClassPackages(Arrays.asList("com.sample.tests"));
+            Injector injector = Collector.getInjector();
+            injector.injectMembers(pageRules);
+            injector.injectMembers(testRules);
+            TDDCollector tddCollector = injector.getInstance(TDDCollector.class);
+            tddCollector.setPageRules(pageRules);
+            tddCollector.setTestRules(testRules);
+            tddCollector.collectTrace(new String[]{"com.sample"});
+            ReportGenerator reportGenerator = new ReportGenerator();
+            reportGenerator.generateReport();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+```

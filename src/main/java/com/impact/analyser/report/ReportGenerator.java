@@ -19,6 +19,21 @@ import static java.lang.String.format;
  */
 public class ReportGenerator {
 
+    private String appPath = "/app";
+    private String[] resources = new String[]{"/app/bootstrap/css/bootstrap.css",
+            "/app/bootstrap/css/bootstrap.min.css",
+            "/app/bootstrap/css/bootstrap-grid.css",
+            "/app/bootstrap/css/bootstrap-grid.min.css",
+            "/app/bootstrap/css/bootstrap-reboot.css",
+            "/app/bootstrap/css/bootstrap-reboot.min.css",
+            "/app/bootstrap/js/bootstrap.bundle.js",
+            "/app/bootstrap/js/bootstrap.bundle.min.js",
+            "/app/bootstrap/js/bootstrap.js",
+            "/app/bootstrap/js/bootstrap.min.js",
+            "/app/jquery/jquery-1.8.2.min.js",
+            "/app/jquery/style.css",
+            "/app/index.html"
+    };
 
     public void generateReport() throws Exception {
         init();
@@ -27,21 +42,20 @@ public class ReportGenerator {
     }
 
     private void init() throws IOException {
-        String indexHtml = IOUtils.toString(this.getClass().getResourceAsStream("/app/index.html"), Charset.defaultCharset());
         String baseDirPath = System.getProperty("user.dir");
-        File impactAnalysisDir = Paths.get(baseDirPath,"impact").toFile();
-        File sourceDirectory = new File(this.getClass().getResource("/app").getPath());
-        FileUtils.copyDirectory(sourceDirectory, impactAnalysisDir);
-        FileUtils.writeStringToFile(Paths.get(impactAnalysisDir.getAbsolutePath(), "index.html").toFile(),
-                indexHtml, Charset.defaultCharset());
-
+        for(String resource: resources) {
+            String indexHtml = IOUtils.toString(this.getClass().getResourceAsStream(resource), "UTF-8");
+            File impactAnalysisDir = Paths.get(baseDirPath,"impact").toFile();
+            FileUtils.writeStringToFile(Paths.get(impactAnalysisDir.getAbsolutePath(), resource).toFile(),
+                    indexHtml, "UTF-8");
+        }
     }
 
 
     private void generateDetailedReport() throws IOException {
         String baseDirPath = System.getProperty("user.dir");
         File impactAnalysisDir = Paths.get(baseDirPath,"impact").toFile();
-        String detailedReportFileName = Paths.get(impactAnalysisDir.getAbsolutePath(), "detailed-summary.js").toString();
+        String detailedReportFileName = Paths.get(impactAnalysisDir.getAbsolutePath(),"app", "detailed-summary.js").toString();
         FileWriter fileWriter = new FileWriter(detailedReportFileName);
         fileWriter.append("$(document).ready(function(){");
         fileWriter.append("var tableBody = $('#detail-impact-summary tbody');");
@@ -51,20 +65,23 @@ public class ReportGenerator {
             if(!name.isEmpty()) {
                 for (ImpactReport impactReport : impactReports) {
                     String testClass = impactReport.getTestClassName();
-                    StringBuilder testMethods = new StringBuilder();
+                    Set<String> testMethods = new HashSet<>();
                     for (MethodImpactReport impact : impactReport.getTestMethods()) {
                         for (Map.Entry<String, String> entry : impact.getFieldMaps().entrySet()) {
                             String pageName = entry.getValue();
                             if (name.equals(pageName)) {
-                                testMethods.append(impact.getMethodName());
-                                testMethods.append("\\n");
+                                testMethods.add(impact.getMethodName());
                             }
                         }
                     }
-                    String tms = testMethods.toString();
-                    if(!tms.isEmpty()) {
+                    StringBuilder methods = new StringBuilder();
+                    for(String testMethod: testMethods) {
+                        methods.append(testMethod);
+                        methods.append("\\n");
+                    }
+                    if(!methods.toString().isEmpty()) {
                      fileWriter.append(format("tableBody.append(\"<tr><td>%s</td><td>%s</td><td>%s</td></tr>\");",
-                            name, testClass, tms));
+                            name, testClass, methods.toString()));
                     }
 
                 }
@@ -83,7 +100,7 @@ public class ReportGenerator {
     private void generateSummaryReport() throws IOException {
         String baseDirPath = System.getProperty("user.dir");
         File impactAnalysisDir = Paths.get(baseDirPath,"impact").toFile();
-        String testReportFileName = Paths.get(impactAnalysisDir.getAbsolutePath(), "summary.js").toString();
+        String testReportFileName = Paths.get(impactAnalysisDir.getAbsolutePath(),"app", "summary.js").toString();
         FileWriter fileWriter = new FileWriter(testReportFileName);
         fileWriter.append("$(document).ready(function(){");
         fileWriter.append("var tableBody = $('#impact-summary tbody');");
@@ -91,18 +108,18 @@ public class ReportGenerator {
         Set<String> pageNames = getAllPagesUsed();
         for(String name: pageNames) {
             if(!name.isEmpty()) {
-                int testCount = 0;
+                Set<String> testSet = new HashSet<>();
                 for (ImpactReport impactReport : impactReports) {
                     for (MethodImpactReport impact : impactReport.getTestMethods()) {
                         for (Map.Entry<String, String> entry : impact.getFieldMaps().entrySet()) {
                             String pageName = entry.getValue();
                             if (name.equals(pageName)) {
-                                testCount++;
+                                testSet.add(impact.getMethodName());
                             }
                         }
                     }
                 }
-                fileWriter.append(format("tableBody.append('<tr><td>%s</td><td>%s</td></tr>');", name, testCount));
+                fileWriter.append(format("tableBody.append('<tr><td>%s</td><td>%s</td></tr>');", name, testSet.size()));
             }
         }
         fileWriter.append("});");
@@ -119,10 +136,14 @@ public class ReportGenerator {
         List<ImpactReport> impactReports = getImpactReportSummary();
         Set<String> pageNames = new HashSet<>();
         for(ImpactReport impactReport : impactReports) {
-            for(MethodImpactReport impact: impactReport.getTestMethods()) {
-                for(Map.Entry<String, String> entry: impact.getFieldMaps().entrySet()) {
-                    String pageName = entry.getValue();
-                    pageNames.add(pageName);
+            if( impactReport.getTestMethods() != null) {
+                for (MethodImpactReport impact : impactReport.getTestMethods()) {
+                    if (impact != null || impact.getFieldMaps() != null) {
+                        for (Map.Entry<String, String> entry : impact.getFieldMaps().entrySet()) {
+                            String pageName = entry.getValue();
+                            pageNames.add(pageName);
+                        }
+                    }
                 }
             }
         }
@@ -138,21 +159,18 @@ public class ReportGenerator {
         List<ImpactReport> impactReports = new ArrayList<>();
         String baseDirPath = System.getProperty("user.dir");
         File impactAnalysisDir = Paths.get(baseDirPath,"impact").toFile();
-        File sourceDirectory = new File(this.getClass().getResource("/app").getPath());
-        FileUtils.copyDirectory(sourceDirectory, impactAnalysisDir);
         File[] files = impactAnalysisDir.listFiles();
         if(files != null) {
             for (File file : files) {
                 ImpactReport impactReport = new ImpactReport();
-                if (file.isDirectory() && !file.getName().equals("bootstrap")
-                        && !file.getName().equals("jquery")) {
+                if (file.isDirectory() && !file.getName().equals("app") && file.listFiles().length != 0) {
                     impactReport.setTestClassName(file.getName());
                     File[] testReportFiles = file.listFiles();
-                    if(testReportFiles != null) {
-                        List<MethodImpactReport> pageReports = new ArrayList<>();
+                    List<MethodImpactReport> pageReports = new ArrayList<>();
+                    if(testReportFiles != null && testReportFiles.length !=0) {
                         for (File testReportFile : testReportFiles) {
                             MethodImpactReport methodImpactReport = new MethodImpactReport();
-                            String content = FileUtils.readFileToString(testReportFile, Charset.defaultCharset());
+                            String content = FileUtils.readFileToString(testReportFile, "UTF-8");
                             Gson gson = new Gson();
                             JsonObject jsonObject = gson.fromJson(content, JsonObject.class);
                             JsonArray fieldReportArray = jsonObject.getAsJsonArray("fieldReports");
@@ -167,8 +185,8 @@ public class ReportGenerator {
                             methodImpactReport.setMethodName(jsonObject.get("testName").getAsString());
                             pageReports.add(methodImpactReport);
                         }
-                        impactReport.setTestMethods(pageReports);
                     }
+                    impactReport.setTestMethods(pageReports);
                 }
                 if(impactReport.getTestClassName() != null) {
                     impactReports.add(impactReport);
