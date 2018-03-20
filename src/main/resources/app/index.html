@@ -1,140 +1,34 @@
-<html ng-app="impact">
-
-<head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
-    <style>
-        td, th {
-            width: 1px;
-            white-space: pre;
-            font-weight:100;
-            font-size:13;
-        }
-        .report {
-            color: red;
-        }
-    </style>
-    <script>
-        var app = angular.module('impact', []);
-        app.controller('analyser', function($scope, $http, $q) {
-            $scope.testcases =[];
-            $scope.cachetests = [];
-            $scope.pageNames = [];
-            $scope.fieldNames = [];
-            var deferred = $q.defer();
-            $http.get('report.json').then(function(response){
-                response.data.forEach(function(d){
-                    if($scope.pageNames.indexOf(d.pageName) == -1){
-                        $scope.pageNames.push(d.pageName);
-                    }
-                    $scope.testcases.push(d);
-                });
-                $scope.cachetests = $scope.testcases;
-            }).catch(function(error){
-                console.log(error);
-            });
-
-            $scope.loadFields = function(pageName) {
-                $scope.testcases = $scope.cachetests;
-                $scope.pageFields = [];
-                if(pageName !== 'Choose Page To Get Report') {
-                    var changedList = $scope.testcases;
-                    changedList.forEach(function(testcase) {
-                        if(testcase.pageName === pageName) {
-                            let fiel = testcase.fieldName+':'+testcase.fieldClass;
-                            if($scope.pageFields.indexOf(fiel) == -1) {
-                                $scope.pageFields.push(fiel);
-                            }
-                        }
-                    });
-                }
-            }
-
-            $scope.loadPage = function(pageName, fieldName) {
-                console.log(pageName);
-                console.log(fieldName);
-                $scope.testcases = $scope.cachetests;
-                var tests = [];
-                if(pageName !== 'Choose Page To Get Report') {
-                    var changedList = $scope.testcases;
-                    $scope.testcases = [];
-                    changedList.forEach(function(testcase) {
-                        if(testcase.pageName === pageName) {
-                            $scope.testcases.push(testcase);
-                            if(tests.indexOf(testcase.testMethod) == -1) {
-                                tests.push(testcase.testMethod);
-                            }
-                        }
-                    });
-                }
-                if(pageName !== 'Choose Page To Get Report' && fieldName != 'Choose Field To Get Report') {
-                    var changedList = $scope.testcases;
-                    $scope.testcases = [];
-                    changedList.forEach(function(testcase) {
-                     let fielddd = testcase.fieldName +':'+ testcase.fieldClass;
-                        if(testcase.pageName === pageName && fielddd === fieldName) {
-                            $scope.testcases.push(testcase);
-                            if(tests.indexOf(testcase.testMethod) == -1) {
-                                tests.push(testcase.testMethod);
-                            }
-                        }
-                    });
-                }
-                $scope.testCount = tests.length;
-                $scope.displaySummary = true;
-            }
-        });
-    </script>
-</head>
-
-<body ng-controller="analyser" ng-init="displaySummary = false">
-    <div>
-        <h3 align="middle" style="color:forestgreen">IMPACT ANALYSIS REPORT</h3>
-    </div>
-    <div class="alert alert-success" role="alert">
-        Your impact Analysis summary.
-        <span ng-hide = "displaySummary===false" class="report">Total Tests Impacted by {{pagep}} are: {{testCount}}</span>
-    </div>
-    <div class="input-group" style="width:40%">
-        <select class="custom-select" ng-init="pagep ='Choose Page To Get Report'" ng-model="pagep" id="inputGroupSelect01" ng-change="loadFields(pagep)">
-            <option selected>Choose Page To Get Report</option>
-            <option value="{{page}}" data-ng-repeat="page in pageNames" >{{page}}</option>
-        </select>
-        <br/>
-        <select class="custom-select" ng-init="fieldName ='Choose Field To Get Report'" ng-model="fieldName" id="inputGroupSelect02">
-            <option selected>Choose Field To Get Report</option>
-            <option value="{{fieldName}}" data-ng-repeat="fieldName in pageFields" >{{fieldName}}</option>
-        </select>
-        <br/>
-        <button type="button" class="btn btn-outline-info" ng-click="loadPage(pagep, fieldName)">Info</button>
-    </div>
-    <br>
-    <table class="table table-bordered table-hover" align="center">
-        <thead class="thead-dark">
-            <tr>
-                <th scope="col">Test Class Name</th>
-                <th scope="col">Test Case Name</th>
-                <th scope="col">Page Name</th>
-                <th scope="col">Page Methods</th>
-                <th scope="col">Page Private Methods</th>
-                <th scope="col">Field Name</th>
-                <th scope="col">Field Class</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr ng-repeat="testcase in testcases">
-                <td>{{testcase.testClass}}</td>
-                <td>{{testcase.testMethod}}</td>
-                <td>{{testcase.pageName}}</td>
-                <td>{{testcase.pageMethod}}</td>
-                <td>{{testcase.pagePrivateMethods}}</td>
-                <td>{{testcase.fieldName}}</td>
-                <td>{{testcase.fieldClass}}</td>
-            </tr>
-        </tbody>
-    </table>
-</body>
+<html>
+    <head>
+        <script src="./bootstrap/js/bootstrap.min.js"></script>
+        <script src="./jquery/jquery-1.8.2.min.js"></script>
+        <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="./jquery/style.css">
+        <script src="./summary.js"></script>
+        <script src="./detailed-summary.js"></script>
+    </head>
+    <body>
+        <table id="impact-summary" class="table table-bordered table-hover" align="center">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Page Name</th>
+                    <th scope="col">Number of Tests Impacted</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <br>
+        <table id="detail-impact-summary" class="table table-bordered table-hover" align="center">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Page Name</th>
+                    <th>Test Class</th>
+                    <th>Test Methods</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </body>
 </html>
