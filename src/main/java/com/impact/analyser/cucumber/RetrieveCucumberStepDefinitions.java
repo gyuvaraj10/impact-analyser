@@ -38,7 +38,7 @@ public class RetrieveCucumberStepDefinitions {
                 if(stepDefs != null) {
                     stepDefinitionsIncludingBackGround.putAll(stepDefs);
                 }
-                scenarios.put(element.getName(), stepDefinitionsIncludingBackGround);
+                scenarios.put(feature.getName()+":"+element.getName(), stepDefinitionsIncludingBackGround);
             }
         }
         return scenarios;

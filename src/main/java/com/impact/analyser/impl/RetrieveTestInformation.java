@@ -47,6 +47,17 @@ public class RetrieveTestInformation implements ITestDefInformation {
         return classMethodMap;
     }
 
+    @Override
+    public Map<Class<?>, Set<MethodNode>> getStepDefClassAndMethod(List<Class<?>> steDefClasses) {
+        Map<Class<?>, Set<MethodNode>> classMethodMap = new HashMap<>();
+        steDefClasses.forEach(x -> {
+            Set<MethodNode> methodNodes = getCucumberStepDefMethodNodes(x);
+            classMethodMap.put(x, methodNodes);
+            logger.log(Level.INFO, "Collected {0} Methods from step def class {1}", new Object[]{methodNodes.size(), steDefClasses});
+        });
+        return classMethodMap;
+    }
+
     /**
      * Collect All the Test Classes
      * @param testsPackages
@@ -66,6 +77,23 @@ public class RetrieveTestInformation implements ITestDefInformation {
         return testClasses;
     }
 
+    /**
+     * Collect All the Test Classes
+     * @param glue
+     * @return
+     */
+    @Override
+    public List<Class<?>> getCucumberStepDefClasses(String[] glue) {
+        List<Class<?>> testClasses = new ArrayList<>();
+        for(String g: glue) {
+            getAllCucumberStepDefTypesInPackages(Collections.singletonList(g)).forEach(type->{
+                logger.log(Level.INFO, "Found a Test Class {0}", type.getName());
+                testClasses.add(type);
+            });
+        }
+        return testClasses;
+    }
+
     @Override
     public Map<Class<?>, ClassNode> getTestClassAndNode(String[] testsPackages) {
         Map<Class<?>, ClassNode> classNodeMap = new HashMap<>();
@@ -77,6 +105,16 @@ public class RetrieveTestInformation implements ITestDefInformation {
         return classNodeMap;
     }
 
+    @Override
+    public Map<Class<?>, ClassNode> getCucumberClassAndNode(String[] glue) {
+        Map<Class<?>, ClassNode> classNodeMap = new HashMap<>();
+        List<Class<?>> testClasses = getCucumberStepDefClasses(glue);
+        testClasses.addAll(getSuperClassesOfTestClasses(testClasses));
+        for(Class<?> testClass: testClasses) {
+            classNodeMap.put(testClass, classUtils.getClassNode(testClass));
+        }
+        return classNodeMap;
+    }
 
     @Override
     public Set<MethodNode> getJUnitTests(Class<?> testClass)  {
@@ -128,6 +166,39 @@ public class RetrieveTestInformation implements ITestDefInformation {
         return methodNodeList;
     }
 
+    public Set<MethodNode> getCucumberStepDefMethodNodes(Class<?> testClass) {
+        ClassReader classR = null;
+        try {
+            classR = new ClassReader(getInternalName(testClass));
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not load class {0}", testClass.getName());
+            logger.log(Level.FINEST, e.getMessage());
+        }
+        ClassNode classNode = new ClassNode();
+        classR.accept(classNode,0);
+        Set<MethodNode> methodNodeList = new HashSet<>();
+        for(MethodNode methodNode: classNode.methods) {
+            if (methodNode.visibleAnnotations != null && methodNode.visibleAnnotations.size() > 0) {
+                Optional opt = methodNode.visibleAnnotations.stream()
+                        .filter(x -> {
+                            Class<?> clz = classUtils.getClass(x.desc.replace("/", ".")
+                                    .replace(";", "").replace("L", ""));
+                            return clz.isAssignableFrom(classUtils.getClass("cucumber.api.java.en.And"))||
+                                    clz.isAssignableFrom(classUtils.getClass("cucumber.api.java.en.When")) ||
+                                    clz.isAssignableFrom(classUtils.getClass("cucumber.api.java.en.Then")) ||
+                                    clz.isAssignableFrom(classUtils.getClass("cucumber.api.java.en.Given")) ||
+                                    clz.isAssignableFrom(classUtils.getClass("cucumber.api.java.en.But"));
+                                }
+                        )
+                        .findFirst();
+                if (opt != null && opt.isPresent()) {
+                    methodNodeList.add(methodNode);
+                }
+            }
+        }
+        return methodNodeList;
+    }
+
     /**
      * verifies if a class is of type Junit test class or TestNG test class
      * @param testClass
@@ -170,6 +241,43 @@ public class RetrieveTestInformation implements ITestDefInformation {
         }
         if(testNGAnno != null) {
             allMethods.addAll(reflections.getMethodsAnnotatedWith(testNGAnno));
+        }
+        Set<Class<?>> testClasses = new HashSet<>();
+        for(Method m: allMethods) {
+            testClasses.add(m.getDeclaringClass());
+        }
+        return testClasses.stream().filter(x->packages.stream().anyMatch(x.getName()::startsWith)).collect(Collectors.toSet());
+    }
+
+    /**
+     * returns all the test classes as a set from the specified packages
+     * @param packages
+     * @return set of test classes
+     */
+    private Set<Class<?>> getAllCucumberStepDefTypesInPackages(List<String> packages) {
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setScanners(new MethodAnnotationsScanner())
+                .forPackages(packages.toArray(new String[]{})));
+        Class<? extends Annotation> andAnno = classUtils.getAnnotationClass("cucumber.api.java.en.And");
+        Class<? extends Annotation> butAnno = classUtils.getAnnotationClass("cucumber.api.java.en.But");
+        Class<? extends Annotation> givenAnno = classUtils.getAnnotationClass("cucumber.api.java.en.Given");
+        Class<? extends Annotation> thenAnno = classUtils.getAnnotationClass("cucumber.api.java.en.Then");
+        Class<? extends Annotation> whenAnno = classUtils.getAnnotationClass("cucumber.api.java.en.When");
+        Set<Method> allMethods = new HashSet<>();
+        if(andAnno != null) {
+            allMethods.addAll(reflections.getMethodsAnnotatedWith(andAnno));
+        }
+        if(butAnno != null) {
+            allMethods.addAll(reflections.getMethodsAnnotatedWith(butAnno));
+        }
+        if(givenAnno != null) {
+            allMethods.addAll(reflections.getMethodsAnnotatedWith(givenAnno));
+        }
+        if(thenAnno != null) {
+            allMethods.addAll(reflections.getMethodsAnnotatedWith(thenAnno));
+        }
+        if(whenAnno != null) {
+            allMethods.addAll(reflections.getMethodsAnnotatedWith(whenAnno));
         }
         Set<Class<?>> testClasses = new HashSet<>();
         for(Method m: allMethods) {

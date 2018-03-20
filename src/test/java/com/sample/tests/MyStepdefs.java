@@ -12,7 +12,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
-public class MyStepdefs {
+public class MyStepdefs extends BaseTest{
 
 
     LandingPage landingPage;

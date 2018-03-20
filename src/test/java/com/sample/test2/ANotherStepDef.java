@@ -1,5 +1,6 @@
 package com.sample.test2;
 
+import com.sample.tests.BaseTest;
 import com.sample.tests.HomePage;
 import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
@@ -9,7 +10,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 /**
  * Created by Yuvaraj on 02/03/2018.
  */
-public class ANotherStepDef {
+public class ANotherStepDef extends BaseTest {
     HomePage page;
 
     @Given("^I have this$")

@@ -33,4 +33,6 @@ public interface ITestMapper {
 
     void map(Map<Class<?>, ClassNode> testClassNodes,
                                       Map<Class<?>, Set<MethodNode>> testClassAndMethods) throws IOException;
+    void mapCucumber(Map<String, Map<String, MethodNode>> scenarioSteps, Map<Class<?>, ClassNode> testClassNodes,
+             Map<Class<?>, Set<MethodNode>> testClassAndMethods) throws IOException;
 }
