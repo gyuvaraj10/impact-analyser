@@ -26,7 +26,7 @@ public class GraphWriter {
         Gson gson = new Gson();
         String testReportJson = gson.toJson(testReport);
         try {
-            FileUtils.writeStringToFile(new File(folderPath), testReportJson, Charset.defaultCharset());
+            FileUtils.writeStringToFile(new File(folderPath), testReportJson, "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
         }
