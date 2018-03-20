@@ -16,10 +16,16 @@ public interface ITestDefInformation {
 
     Map<Class<?>, ClassNode> getTestClassAndNode(String[] testsPackages);
 
+    Map<Class<?>, ClassNode> getCucumberClassAndNode(String[] glue);
+
+    List<Class<?>> getCucumberStepDefClasses(String[] glue);
+
     Set<MethodNode> getJUnitTests(Class<?> jUnitTestClass);
 
     Set<MethodNode> getTestNGTests(Class<?> testngTestClass);
 
     Map<Class<?>, Set<MethodNode>> getTestClassAndTestMethod(List<Class<?>> testClasses);
+
+    Map<Class<?>, Set<MethodNode>> getStepDefClassAndMethod(List<Class<?>> steDefClasses);
 
 }

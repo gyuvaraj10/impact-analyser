@@ -13,28 +13,18 @@ Basic Business Rules: There are 2 types of business rules available with this li
 1. Page Level Rules: Page Level Rule tells this library to collect all the pages that inherit the specified page. Using this page level rules you can specify the BasePage class's fully qualified name.  
     To define the PageRules, you write the following code
     ```
-    PageRules pageRules = new PageRules();
-    pageRules.setBasePageClass("pages.BasePage");
+     PageRules pageRules = new PageRules();
+     pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
+     pageRules.setPageClassPackages(Arrays.asList("com.sample"));
     ```
-    
-1. Element Level Rules: Element Level Rule tells the library 
-  1. If you are following a model where you define all the page's webelements in the same page class
-  1.  If you are following a model where you define 2 layers of classes for your pages, 1 to define the elements and other to define the actions
-  To define the Element Rules, you write the following code
-  Example1: Web Elements and page actions are defined in the same class
-  ```
-   ElementRules elementRules = new ElementRules();
-   elementRules.setElementsDefinedWithInPageClassOnly(false);
-   elementRules.setElementClassPackages(Arrays.asList("com.sample"));
-   elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
-  ```
-  Example2: Web Elements and page actions are defined in the different class (2 layers are defined to maintain pages)
-  ```
-   ElementRules elementRules = new ElementRules();
-   elementRules.setElementsDefinedWithInPageClassOnly(true);
-   elementRules.setElementClassPackages(Arrays.asList("pages"));
-   elementRules.setPageClassPackages(Arrays.asList("pages"));
-  ```
+  
+1. Test Level Rules: Page Level Rule tells this library to collect all the pages that inherit the specified page. Using this page level rules you can specify the BasePage class's fully qualified name.  
+    To define the PageRules, you write the following code
+    ```
+    TestRules testRules = new TestRules();
+    testRules.setBaseTestClass("com.sample.tests.BaseTest");
+    testRules.setTestClassPackages(Arrays.asList("com.sample"));
+    ```
   
 _**How to use this library:**_ 
 
@@ -52,40 +42,28 @@ _Following the steps to calculate the impact_
  
  Example1: Evaluate the Impact for Cucumber Framework
  ```
- public void calculateTheImpact() throws Exception {
-     PageRules pageRules = new PageRules();
-     pageRules.setBasePageClass("pages.BasePage");
-     ElementRules elementRules = new ElementRules();
-     elementRules.setElementsDefinedWithInPageClassOnly(true);
-     elementRules.setElementClassPackages(Arrays.asList("pages"));
-     elementRules.setPageClassPackages(Arrays.asList("pages"));
-     BDDCollector bddCollector = new BDDCollector(pageRules, elementRules);
-     List<JsonObject> cucumberReports = bddCollector.collectJsonReport(new String[]{"tests.web"},
-             "/Users/Yuvaraj/dev/selenium-guice/src/test/resources/features");
-     ReportGenerator reportGenerator = new ReportGenerator();
-     reportGenerator.generateReport(cucumberReports);
- }
+  @Test
+     public void testBDDCollector() {
+         try {
+             PageRules pageRules = new PageRules();
+             pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
+             pageRules.setPageClassPackages(Arrays.asList("com.sample"));
+             TestRules testRules = new TestRules();
+             testRules.setBaseTestClass("com.sample.tests.BaseTest");
+             testRules.setTestClassPackages(Arrays.asList("com.sample"));
+             Injector injector = Collector.getInjector();
+             BDDCollector bddCollector = injector.getInstance(BDDCollector.class);
+             bddCollector.setPageRules(pageRules);
+             bddCollector.setTestRules(testRules);
+             bddCollector.collectTrace(new String[]{"com.sample"}, "/Users/Yuvaraj/dev/impact-analyser/src/test/resources");
+             ReportGenerator reportGenerator = new ReportGenerator();
+             reportGenerator.generateReport();
+         } catch (Exception ex) {
+             ex.printStackTrace();
+         }
+     }
  ```
  Example2: Evaluate the Impact for TestNG/JUnit Framework
- ```
- public void calculateTheImpact() throws Exception {
-     PageRules pageRules = new PageRules();
-     pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
-     ElementRules elementRules = new ElementRules();
-     elementRules.setElementsDefinedWithInPageClassOnly(false);
-     elementRules.setElementClassPackages(Arrays.asList("com.sample"));
-     elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
-     TDDCollector tddCollector = new TDDCollector(pageRules, elementRules);
-     List<JsonObject> jsonObjects = tddCollector.collectJsonReport(new String[]{"com.sample.tests"});
-     ReportGenerator reportGenerator = new ReportGenerator();
-          reportGenerator.generateReport(jsonObjects);
-  }
- ```
- 1. Once the test execution is successful, you will see a folder named 'impact' in your project directory in which you will find index.html, report.json files
- The HTML report will look like 
- [HTML REPORT](htmlreport.png)
-
-Example Test:
 ```
  @Test
     public void testTDDCollector() {
@@ -110,3 +88,19 @@ Example Test:
         }
     }
 ```
+ 1. Once the test execution is successful, you will see a folder named 'impact' in your project directory in which you will find index.html, report.json files
+ The HTML report will look like 
+ [HTML REPORT](htmlreport.png)
+
+**Rules:**
+Your page should not contain any test method
+Your page class should extend a base class
+Your Test class should extend a base class
+
+**limitations: **
+Rule1: may not give you the results if the methods are from interface
+Rule2: All the selenium elements that are available in the methods must be from page classes
+
+**ToDos:**
+Include validators to check if the basePageClass, baseTesClass are not null
+Make TestRules, PageRules are injectable by using guice injectMembers

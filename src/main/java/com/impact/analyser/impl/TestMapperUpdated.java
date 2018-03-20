@@ -110,6 +110,41 @@ public class TestMapperUpdated  implements ITestMapper {
         }
     }
 
+    @Override
+    public void mapCucumber(Map<String, Map<String, MethodNode>> scenarioSteps,
+                            Map<Class<?>, ClassNode> stepDefClassNodes,
+                            Map<Class<?>, Set<MethodNode>> stepDefClassAndMethods) throws IOException {
+        this.testClassNodes = stepDefClassNodes;
+        getPageAndTestClassNodeMaps();
+        List<TestReport> testReports = new ArrayList<>();
+        for(Map.Entry<String, Map<String, MethodNode>> scenario: scenarioSteps.entrySet()) {
+            graphWriter.init(scenario.getKey());
+            Map<String, MethodNode>  maps = scenario.getValue();
+            Set<FieldReport> fieldReports = new HashSet<>();
+            for(Map.Entry<String, MethodNode> entry: maps.entrySet()) {
+                fieldReports.addAll(mapCucumber(entry.getValue()));
+            }
+            if(!fieldReports.isEmpty()) {
+                String featureScenario = scenario.getKey();
+                TestReport testReport = new TestReport();
+                testReport.setTestClassName("feature file Name");
+                testReport.setTestName(featureScenario.split(":")[1]);
+                testReport.setFieldReports(fieldReports);
+                testReports.add(testReport);
+                graphWriter.writeTestReport(testReport, scenario.getKey(), featureScenario.split(":")[0]);
+            }
+        }
+    }
+
+    /**
+     * mapping method for test class
+     * @param stepDefMethod
+     * @return
+     */
+    private Set<FieldReport> mapCucumber(MethodNode stepDefMethod) {
+        return scanTestMethod(stepDefMethod);
+    }
+
     /**
      * mapping method for test class
      * @param testMethods

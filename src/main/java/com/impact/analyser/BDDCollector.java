@@ -3,87 +3,90 @@ package com.impact.analyser;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.inject.Inject;
 import com.impact.analyser.cucumber.RetrieveCucumberStepDefinitions;
 import com.impact.analyser.cucumber.models.CucumberReportFormatter;
 import com.impact.analyser.cucumber.models.CucumberResultReport;
-import com.impact.analyser.report.*;
-import com.impact.analyser.rules.ElementRules;
+import com.impact.analyser.interfaces.IPageInformation;
+import com.impact.analyser.interfaces.ITestDefInformation;
+import com.impact.analyser.interfaces.ITestMapper;
 import com.impact.analyser.rules.PageRules;
+import com.impact.analyser.rules.TestRules;
 import cucumber.api.cli.Main;
 
 import org.apache.commons.io.FileUtils;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Yuvaraj on 27/02/2018.
  */
 public class BDDCollector {
 
-    private final RetrieveCucumberStepDefinitions cucumberStepDefinitions = new RetrieveCucumberStepDefinitions();
-    private final RetrievePageNames retrievePageNames = new RetrievePageNames();
-    private final PageEngine pageEngine = new PageEngine();
-    private final PageRules pageRules;
-    private final ElementRules elementRules;
+    @Inject
+    private RetrieveCucumberStepDefinitions cucumberStepDefinitions;
 
-    public BDDCollector(PageRules pageRules, ElementRules elementRules) {
+    @Inject
+    private PageRules pageRules;
+
+    @Inject
+    private TestRules testRules;
+
+    @Inject
+    private Logger logger;
+
+    @Inject
+    IPageInformation iPageInformation;
+
+    @Inject
+    ITestDefInformation iTestDefInformation;
+
+    @Inject
+    ITestMapper testMapper;
+
+
+    public void setPageRules(PageRules pageRules) {
         this.pageRules = pageRules;
-        this.elementRules = elementRules;
     }
 
-    public List<JsonObject> collectJsonReport(String[] glue, String featureFilePath) throws Exception {
+    public void setTestRules(TestRules testRules) {
+        this.testRules = testRules;
+    }
+
+    public void collectTrace(String[] glue, String featureFilePath) throws IOException, NoSuchFieldException, ClassNotFoundException {
         List<CucumberResultReport> scenarios = getScenarios(glue, featureFilePath);
-        List<CucumberTestReport> testReports = new ArrayList<>();
-        Map<String, Map<String, MethodNode>> scenarioStepDefDetailMap = new HashMap<>();
         Iterator<CucumberResultReport> iterator = scenarios.iterator();
-        List<PageInfo> pageInfos = pageEngine.getSeleniumFieldsFromPageMethod(elementRules, pageRules);
+        Map<String, Map<String, MethodNode>> scenarioStepDes = new HashMap<>();
+        Map<Class<?>, ClassNode> stepDefClassNode = iTestDefInformation.getCucumberClassAndNode(glue);
         while(iterator.hasNext()) {
             CucumberResultReport feature = iterator.next();
-            scenarioStepDefDetailMap = cucumberStepDefinitions.getCucumberStepAndDefinitionForAScenario(feature, glue);
-            for (Map.Entry<String, Map<String, MethodNode>> scenario : scenarioStepDefDetailMap.entrySet()) {
-                CucumberTestReport cucumberReport = new CucumberTestReport();
-                cucumberReport.setFeatureFileName(feature.getName());
-                cucumberReport.setScenarioName(scenario.getKey());
-                List<CucumberStepDef> stepDefs = new ArrayList<>();
-                for (Map.Entry<String, MethodNode> entry : scenario.getValue().entrySet()) {
-                    CucumberStepDef stepDef = new CucumberStepDef();
-                    String stepName = entry.getKey();
-                    stepDef.setName(stepName);
-                    MethodNode stepDefinition = entry.getValue();
-                    Map<String, Set<String>> pageAndPageMethodsMap = retrievePageNames.getPagesAndMethods(pageRules, stepDefinition);
-                    List<PageInfo> pageReportList = new ArrayList<>();
-                    for (Map.Entry<String, Set<String>> methodEntry : pageAndPageMethodsMap.entrySet()) {
-                        Optional<PageInfo> optional = pageInfos.stream().filter(x -> x.getPageName().equals(methodEntry.getKey())).findFirst();
-                        PageInfo pageReport = new PageInfo();
-                        if (optional.isPresent()) {
-                            PageInfo pageReport1 = optional.get();
-                            pageReport.setPageName(pageReport1.getPageName());
-                            Set<MethodInfo> methodInfoSet = pageReport1.getMethodReportList();
-                            Set<MethodInfo> methodReport = new HashSet<>();
-                            for (String method : methodEntry.getValue()) {
-                                Optional<MethodInfo> methodInfoOptional = methodInfoSet.stream()
-                                        .filter(x -> x.getMethodName().equals(method))
-                                        .findFirst();
-                                if (methodInfoOptional.isPresent()) {
-                                    methodReport.add(methodInfoOptional.get());
-                                }
-                            }
-                            pageReport.setMethodReportList(methodReport);
-                            pageReportList.add(pageReport);
-                        }
-                    }
-                    stepDef.setPages(pageReportList);
-                    stepDefs.add(stepDef);
-                }
-                cucumberReport.setStepDefs(stepDefs);
-                testReports.add(cucumberReport);
-            }
+            scenarioStepDes.putAll(cucumberStepDefinitions.getCucumberStepAndDefinitionForAScenario(feature, glue));
         }
-        return getJsonObjectsForHtmlReport(testReports);
+        Map<Class<?>, Set<MethodNode>> stepDefAndMethodNodes = iTestDefInformation
+                .getStepDefClassAndMethod(new ArrayList<>(stepDefClassNode.keySet()));
+        Set<Class<?>> pageClasses = iPageInformation.getAllPageTypesInPackages(pageRules);
+        logger.log(Level.INFO, "Found {0} number of page classes", pageClasses.size());
+        Map<Class<?>, Set<String>> pageAndElements = iPageInformation.getPageElements(pageClasses);
+        logger.info("Done retrieving page elements "+ pageAndElements.size());
+        Map<Class<?>, Set<String>> pageAndMethods = iPageInformation.getPageMethods(pageClasses);
+        logger.info("Done retrieving page methods "+ pageAndMethods.size());
+        Map<Class<?>, ClassNode> pageClassNodeMap = iPageInformation.getPageClassNodeMap(pageClasses);
+        testMapper.setPageRules(pageRules);
+        testMapper.setTestRules(testRules);
+        testMapper.setPageClassNodes(pageClassNodeMap);
+        testMapper.setPageAndMethods(pageAndMethods);
+        testMapper.setPageClasses(pageClasses);
+        testMapper.setTestClassMethods(stepDefAndMethodNodes);
+        testMapper.setPageAndElements(pageAndElements);
+        testMapper.setPageAndMethods(pageAndMethods);
+        testMapper.mapCucumber(scenarioStepDes, stepDefClassNode, stepDefAndMethodNodes);
     }
 
     /**
@@ -120,41 +123,5 @@ public class BDDCollector {
         Main.run(args.toArray(new String[]{}), loader);
         String content = FileUtils.readFileToString(new File(reportJson), Charset.defaultCharset());
         return CucumberReportFormatter.parse(content);
-    }
-
-    private List<JsonObject> getJsonObjectsForHtmlReport(List<CucumberTestReport> testReports) {
-        List<JsonObject> jsonObjects = new ArrayList<>();
-        for(CucumberTestReport cucumberTestReport: testReports) {
-            String featureFileName = cucumberTestReport.getFeatureFileName();
-            String scenarioName = cucumberTestReport.getScenarioName();
-            for(CucumberStepDef stepDef: cucumberTestReport.getStepDefs()){
-                String testMethodName = stepDef.getName();
-                for(PageInfo pageInfo: stepDef.getPages()) {
-                    String pageName = pageInfo.getPageName();
-                    for(MethodInfo methodInfo: pageInfo.getMethodReportList()) {
-                        String pageMethodName = methodInfo.getMethodName();
-                        for(Map.Entry<String, String> fieldClassEntry: methodInfo.getFieldAndFieldClassName().entrySet()){
-                            JsonObject jsonObject = new JsonObject();
-                            String fieldName = fieldClassEntry.getKey();
-                            String fieldClass = fieldClassEntry.getValue();
-                            jsonObject.addProperty("testClass", featureFileName);
-                            jsonObject.addProperty("testMethod", scenarioName);
-                            jsonObject.addProperty("pageName", pageName);
-                            jsonObject.addProperty("pageMethod", pageMethodName);
-                            jsonObject.addProperty("fieldName", fieldName);
-                            jsonObject.addProperty("fieldClass", fieldClass);
-//                            List<String> privateMethods = methodInfo.getPrivateMethods();
-//                            if(privateMethods!= null && !privateMethods.isEmpty()) {
-//                                String pMethods = new Gson().toJson(privateMethods);
-//                                pMethods = pMethods.replace("[\"", "").replace("\"]", "").replace("\",\"","\n");
-//                                jsonObject.addProperty("pagePrivateMethods", pMethods);
-//                            }
-                            jsonObjects.add(jsonObject);
-                        }
-                    }
-                }
-            }
-        }
-        return jsonObjects;
     }
 }
