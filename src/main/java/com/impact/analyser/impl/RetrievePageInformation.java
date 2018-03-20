@@ -154,7 +154,6 @@ public class RetrievePageInformation implements IPageInformation {
                             }
                         } catch (NoSuchFieldException e) {
                             logger.log(Level.SEVERE, "Failed to load the field {0} please keep on this field", field);
-                            e.printStackTrace();
                         }
                     }
                 }
