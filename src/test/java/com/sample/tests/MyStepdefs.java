@@ -25,7 +25,7 @@ public class MyStepdefs {
     @Before(order = 1)
     public void before1() {
         assertTrue(true);
-        throw new RuntimeException("asds");
+//        throw new RuntimeException("asds");
     }
 
     @When("^I do this$")

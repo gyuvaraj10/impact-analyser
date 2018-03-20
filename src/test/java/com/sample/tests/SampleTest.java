@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SampleTest extends BaseTest {
+public class SampleTest extends BaseSeleniumTest {
 
     HomePage page1;
     LandingPage landingPage;
@@ -21,7 +21,7 @@ public class SampleTest extends BaseTest {
 //        driver.get("https://www.amazon.co.uk/");
         page1.getOnlineCheckInHeaderText();
         AnotherPage page = new AnotherPage();
-        page.login();
+        page.login("", "");
 //        HomePage page = new HomePage(null);
         String onlineText = page1.getOnlineCheckInHeaderText();
 //        page.getOnlineCheckInHeaderText1();
@@ -37,12 +37,11 @@ public class SampleTest extends BaseTest {
         System.setProperty("webdriver.chrome.driver","/Users/Yuvaraj/Desktop/softwares/chromedriver/chromedriver");
         String actual = "Your Amazon.co.uk";
         AnotherPage page = new AnotherPage();
-        page.login();
+        page.login("","");
         WebDriver driver = new ChromeDriver();
         driver.get("https://www.amazon.co.uk/");
         LandingPage landingPage = new LandingPage(driver);
         landingPage.getasdkaskd();
         landingPage.login();
-
     }
 }

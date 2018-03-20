@@ -6,9 +6,14 @@
 
     <groupId>ui-impact-analyser</groupId>
     <artifactId>impact.analyser</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 
     <dependencies>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>4.2.0</version>
+        </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>

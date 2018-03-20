@@ -1,9 +1,9 @@
 package com.sample.tests;
 
-import com.google.gson.JsonObject;
+import com.google.inject.Injector;
 import com.impact.analyser.*;
 import com.impact.analyser.report.ReportGenerator;
-import com.impact.analyser.rules.ElementRules;
+import com.impact.analyser.rules.TestRules;
 import com.impact.analyser.rules.PageRules;
 import org.junit.Test;
 import java.util.*;
@@ -19,34 +19,22 @@ public class AsmTest {
         try {
             PageRules pageRules = new PageRules();
             pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
-            ElementRules elementRules = new ElementRules();
-            elementRules.setElementsDefinedWithInPageMethodAlso(true);
-            elementRules.setElementsDefinedWithInPageClassOnly(true);
-            elementRules.setElementClassPackages(Arrays.asList("com.sample"));
-            elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
-            TDDCollector tddCollector = new TDDCollector(pageRules, elementRules);
-            List<JsonObject> jsonObjects = tddCollector.collectJsonReport(new String[]{"com.sample"});
+            pageRules.setPageClassPackages(Arrays.asList("com.sample"));
+            TestRules testRules = new TestRules();
+            testRules.setBaseTestClass("com.sample.tests.BaseSeleniumTest");
+            testRules.setTestClassPackages(Arrays.asList("com.sample.tests"));
+            Injector injector = Collector.getInjector();
+            injector.injectMembers(pageRules);
+            injector.injectMembers(testRules);
+            TDDCollector tddCollector = injector.getInstance(TDDCollector.class);
+            tddCollector.setPageRules(pageRules);
+            tddCollector.setTestRules(testRules);
+            tddCollector.collectTrace(new String[]{"com.sample"});
             ReportGenerator reportGenerator = new ReportGenerator();
-            reportGenerator.generateReport(jsonObjects);
+            reportGenerator.generateReport();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
-
-    @Test
-    public void calculateTheImpact() throws Exception {
-        PageRules pageRules = new PageRules();
-        pageRules.setBasePageClass("com.sample.tests.BaseSeleniumPage");
-        ElementRules elementRules = new ElementRules();
-        elementRules.setElementsDefinedWithInPageClassOnly(true);
-        elementRules.setElementsDefinedWithInPageMethodAlso(false);
-        elementRules.setElementClassPackages(Arrays.asList("com.sample"));
-        elementRules.setPageClassPackages(Arrays.asList("com.sample.test2", "com.sample.tests"));
-        BDDCollector bddCollector = new BDDCollector(pageRules, elementRules);
-        List<JsonObject> cucumberReports = bddCollector.collectJsonReport(new String[]{"com.sample"},
-                "/Users/Yuvaraj/dev/impact-analyser/src/test/resources");
-        ReportGenerator reportGenerator = new ReportGenerator();
-        reportGenerator.generateReport(cucumberReports);
     }
 
 }
